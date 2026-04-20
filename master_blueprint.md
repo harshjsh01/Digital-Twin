@@ -1,74 +1,101 @@
-# Indian Railways "Digital Twin" Simulation: Master Blueprint
+# Project Aahavaan - Rail: Master Blueprint
 
-This document serves as the architectural foundation for the Railway Decision Support Simulation.
+This document defines the architectural and technical specification for the full-stack Indian Railways Decision Support Simulation.
 
-## 1. Technical Stack
-- **Language:** Python 3.x
-- **Data Format:** JSON (for Route and Timetable)
-- **Architecture:** Modular decoupling of Data, Simulation, and Optimization.
-- **Simulation Type:** Discrete Time-Step (Minute-by-minute ticks).
+## 1. Monorepo Architecture
+- **/backend**: Python (FastAPI), Pandas, Google OR-Tools.
+- **/frontend**: Next.js, Tailwind CSS, Recharts.
 
-## 2. Project Structure
-```text
-Railway/
-├── data/                       # Generated JSON data
-│   ├── route.json              # Station and track layout
-│   └── timetable.json          # Train schedules and priorities
-├── src/                        # Source Logic
-│   ├── data_generator.py       # Module to create dummy data
-│   ├── simulation_engine.py    # Core tick-based simulator
-│   ├── optimization_engine.py  # Conflict detection & resolution
-│   └── utils.py                # Logging and formatting helpers
-├── main.py                     # Entry point (Scenario A vs Scenario B)
-├── master_blueprint.md         # This document
-└── implementation_plan.md      # Planning artifact
+---
+
+## 2. Data Schema
+
+### 2.1 Station Schema
+```json
+{
+  "id": "STN_NDLS",
+  "name": "New Delhi",
+  "coordinates": {"x": 100, "y": 200},
+  "platforms": 1,
+  "loops": 2
+}
 ```
 
-## 3. Data Flow & Models
+### 2.2 Track Segment Schema
+```json
+{
+  "id": "SEG_001",
+  "from": "STN_A",
+  "to": "STN_B",
+  "distance_km": 15.0,
+  "max_speed": 130,
+  "current_occupant": null
+}
+```
 
-### 3.1 Network Model (`route.json`)
-- **Stations:** At least 5 stations (A, B, C, D, E).
-- **Tracks:**
-    - **Main Line:** High-speed connection between stations.
-    - **Loop Lines:** 2 per station. Used for holding trains or allowing overtakes.
-- **Capacity:** Each track segment (Main or Loop) can hold only 1 train at a time.
+### 2.3 Train Schema
+```json
+{
+  "id": "T_12301",
+  "type": "Vande Bharat",
+  "priority_weight": 10,
+  "current_loc": {"segment_id": "SEG_001", "dist_from_start": 5.2},
+  "speed": 110,
+  "schedule": [
+    {"station_id": "STN_A", "arrival": "10:00", "departure": "10:02"},
+    ...
+  ],
+  "cumulative_delay": 5
+}
+```
 
-### 3.2 Train Model (`timetable.json`)
-- **Properties:**
-    - `id`: Unique identifier.
-    - `type`: "Express" (High Priority) or "Freight" (Low Priority).
-    - `priority`: Numeric value (e.g., 1 for Express, 0 for Freight).
-    - `max_speed`: km/min.
-    - `route`: List of stations and scheduled arrival/departure times.
-    - `current_delay`: Minutes.
+---
 
-## 4. Simulation Engine Logic
+## 3. API Documentation (FastAPI)
 
-### 4.1 Minute-by-Minute Tick
-Every tick, the engine:
-1. Updates each train's position based on speed and current track.
-2. Checks if the train has reached a station.
-3. If at a station, checks "Standard Rules" (Scenario A) or "Optimized Rules" (Scenario B) for permission to proceed.
+| Endpoint | Method | Description |
+| :--- | :--- | :--- |
+| `/api/network` | GET | Returns static station and track layout (for rendering the map). |
+| `/api/state` | GET | Returns live positions, speeds, and delays for all trains. |
+| `/api/simulate/tick` | POST | Manually advance simulation time (debug/dev mode). |
+| `/api/mode` | PUT | Switch between `UNOPTIMIZED` and `AI_OPTIMIZED` modes. |
 
-### 4.2 Scenario A: Standard Rules (FIFO)
-- Trains proceed strictly in the order they arrived at the station.
-- If the track to the next station is occupied, the train waits at the current station platform/loop.
+---
 
-### 4.3 Scenario B: Optimization Engine
-The engine looks ahead X minutes:
-1. **Conflict Detection:** Identifies if a Freight train is ahead of an Express train on the same Main Line segment, causing the Express train to slow down or stop.
-2. **Resolution:** 
-    - If a conflict is predicted, the Freight train is instructed to move to a **Loop Line** at the nearest station.
-    - The Freight train remains on the Loop Line until the Express train clears the segment.
-    - Result: Express train maintains speed; Freight train takes a minor local delay to prevent a major system-wide cascade.
+## 4. Mathematical Optimization Logic
 
-## 5. Metrics & Output
-The simulation will track **Total Cumulative Delay (TCD)**.
-- **Scenario A Output:** TCD based on manual-style FIFO logic.
-- **Scenario B Output:** TCD using the Optimization Engine.
-- **Comparison:** Total minutes saved.
+The "Brain" uses **Constraint Programming (CP-SAT)** via Google OR-Tools to solve the **Precedence-Constrained Resource Allocation** problem.
 
-## 6. Future Scalability
-- Integration of actual Indian Railways COA (Control Office Application) data.
-- GIS mapping for real-world route visualization.
-- Multi-track main lines (Up/Down directionality).
+### 4.1 Conflict Detection
+A conflict is detected if:
+`Train_A.interval(segment_S) ∩ Train_B.interval(segment_S) ≠ ∅`
+Where `interval` is the time window a train occupies a specific track segment.
+
+### 4.2 Resolution Solver
+**Objective Function:**
+`minimize ∑ (Priority_Weight[i] * Delay[i])`
+
+**Decision Variables:**
+- `Departure_Time[train][station]`: When a train leaves a station.
+- `Platform_Usage[train][station]`: Which specific line (Main or Loop) the train occupies.
+
+---
+
+## 5. Next.js Component Hierarchy
+
+- **IndexPage** (Root)
+  - **NavBar**: Status indicators and mode switch (Manual/AI).
+  - **DashboardLayout**:
+    - **ControlRoomView**:
+      - **LiveMap**: Track visualization using SVG or HTML5 Canvas.
+      - **TrainDetailCard**: Real-time stats for the selected train.
+    - **MetricsSidebar**:
+      - **DelayComparisonChart**: Side-by-side live metrics (Recharts).
+      - **DecisionFeed**: A scrolling list of AI resolution actions.
+
+---
+
+## 6. Development Workflow
+1. **Phase 2**: Implement the engine and FastAPI service.
+2. **Phase 3**: Develop the OR-Tools solver logic.
+3. **Phase 4**: Build the Next.js visualizer and dashboard.

@@ -1,7 +1,23 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
-data/
-.vscode/
-.idea/
-*.log
+backend/data/*.json
+backend/data/*.log
+
+# Node
+node_modules/
+.next/
+out/
+build/
+.env*
+*.local
+.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Git
+.git/

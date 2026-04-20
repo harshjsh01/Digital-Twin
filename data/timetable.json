@@ -1,0 +1,344 @@
+{
+    "trains": [
+        {
+            "id": "TRN_001",
+            "name": "Freight Train 1",
+            "type": "Freight",
+            "priority": 0,
+            "max_speed_km_min": 0.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 0,
+                    "departure_min": 2
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 30,
+                    "departure_min": 32
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 60,
+                    "departure_min": 62
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 90,
+                    "departure_min": 92
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 120,
+                    "departure_min": 122
+                }
+            ]
+        },
+        {
+            "id": "TRN_002",
+            "name": "Freight Train 2",
+            "type": "Freight",
+            "priority": 0,
+            "max_speed_km_min": 0.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 5,
+                    "departure_min": 7
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 35,
+                    "departure_min": 37
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 65,
+                    "departure_min": 67
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 95,
+                    "departure_min": 97
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 125,
+                    "departure_min": 127
+                }
+            ]
+        },
+        {
+            "id": "TRN_003",
+            "name": "Freight Train 3",
+            "type": "Freight",
+            "priority": 0,
+            "max_speed_km_min": 0.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 10,
+                    "departure_min": 12
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 40,
+                    "departure_min": 42
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 70,
+                    "departure_min": 72
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 100,
+                    "departure_min": 102
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 130,
+                    "departure_min": 132
+                }
+            ]
+        },
+        {
+            "id": "TRN_004",
+            "name": "Freight Train 4",
+            "type": "Freight",
+            "priority": 0,
+            "max_speed_km_min": 0.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 15,
+                    "departure_min": 17
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 45,
+                    "departure_min": 47
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 75,
+                    "departure_min": 77
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 105,
+                    "departure_min": 107
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 135,
+                    "departure_min": 137
+                }
+            ]
+        },
+        {
+            "id": "TRN_005",
+            "name": "Express Train 5",
+            "type": "Express",
+            "priority": 1,
+            "max_speed_km_min": 1.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 2,
+                    "departure_min": 4
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 32,
+                    "departure_min": 34
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 62,
+                    "departure_min": 64
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 92,
+                    "departure_min": 94
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 122,
+                    "departure_min": 124
+                }
+            ]
+        },
+        {
+            "id": "TRN_006",
+            "name": "Express Train 6",
+            "type": "Express",
+            "priority": 1,
+            "max_speed_km_min": 1.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 7,
+                    "departure_min": 9
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 37,
+                    "departure_min": 39
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 67,
+                    "departure_min": 69
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 97,
+                    "departure_min": 99
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 127,
+                    "departure_min": 129
+                }
+            ]
+        },
+        {
+            "id": "TRN_007",
+            "name": "Express Train 7",
+            "type": "Express",
+            "priority": 1,
+            "max_speed_km_min": 1.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 12,
+                    "departure_min": 14
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 42,
+                    "departure_min": 44
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 72,
+                    "departure_min": 74
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 102,
+                    "departure_min": 104
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 132,
+                    "departure_min": 134
+                }
+            ]
+        },
+        {
+            "id": "TRN_008",
+            "name": "Express Train 8",
+            "type": "Express",
+            "priority": 1,
+            "max_speed_km_min": 1.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 17,
+                    "departure_min": 19
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 47,
+                    "departure_min": 49
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 77,
+                    "departure_min": 79
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 107,
+                    "departure_min": 109
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 137,
+                    "departure_min": 139
+                }
+            ]
+        },
+        {
+            "id": "TRN_009",
+            "name": "Express Train 9",
+            "type": "Express",
+            "priority": 1,
+            "max_speed_km_min": 1.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 22,
+                    "departure_min": 24
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 52,
+                    "departure_min": 54
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 82,
+                    "departure_min": 84
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 112,
+                    "departure_min": 114
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 142,
+                    "departure_min": 144
+                }
+            ]
+        },
+        {
+            "id": "TRN_010",
+            "name": "Express Train 10",
+            "type": "Express",
+            "priority": 1,
+            "max_speed_km_min": 1.5,
+            "schedule": [
+                {
+                    "station_id": "STN_A",
+                    "arrival_min": 27,
+                    "departure_min": 29
+                },
+                {
+                    "station_id": "STN_B",
+                    "arrival_min": 57,
+                    "departure_min": 59
+                },
+                {
+                    "station_id": "STN_C",
+                    "arrival_min": 87,
+                    "departure_min": 89
+                },
+                {
+                    "station_id": "STN_D",
+                    "arrival_min": 117,
+                    "departure_min": 119
+                },
+                {
+                    "station_id": "STN_E",
+                    "arrival_min": 147,
+                    "departure_min": 149
+                }
+            ]
+        }
+    ]
+}
