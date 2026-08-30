@@ -19,6 +19,7 @@ An end-to-end full-stack Digital Twin simulation and decision support platform d
 | [**./docs/representation.md**](docs/representation.md) | System flow charts, finite state machines (FSM), and visual track representations. |
 | [**./docs/api_docs.md**](docs/api_docs.md) | REST API endpoint reference with request and response schemas. |
 | [**./docs/database_schema.md**](docs/database_schema.md) | Network topology, train timetable, and telemetry data models. |
+| [**./docs/REFERENCES.md**](docs/REFERENCES.md) | Comprehensive academic, industrial, and technical literature references. |
 
 ---
 
