@@ -65,6 +65,14 @@ export default function Dashboard() {
     </div>
   );
 
+  const trainList: any[] = Array.isArray(state?.trains) 
+    ? state.trains 
+    : Object.values(state?.trains || {});
+
+  const simTime = state?.current_time ?? state?.time ?? 0;
+  const activeTrainsCount = trainList.filter((t: any) => !t.completed).length;
+  const currentTotalDelay = trainList.reduce((acc: number, t: any) => acc + (t.delay_min || 0), 0);
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 p-8 font-sans">
       {/* Header */}
@@ -112,7 +120,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-12 gap-8 h-[calc(100vh-180px)]">
         {/* Map Area */}
         <div className="col-span-8 flex flex-col gap-6">
-          <LiveMap network={network} trains={state.trains} />
+          <LiveMap network={network} trains={trainList} />
           
           <div className="grid grid-cols-3 gap-6">
              <div className="bg-slate-900 border border-slate-800 p-4 rounded-xl flex items-center gap-4 shadow-lg shadow-black/50">
@@ -121,7 +129,7 @@ export default function Dashboard() {
                </div>
                <div>
                  <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Active Trains</p>
-                 <p className="text-xl font-bold text-white">{state.trains.filter((t:any) => !t.completed).length}</p>
+                 <p className="text-xl font-bold text-white">{activeTrainsCount}</p>
                </div>
              </div>
 
@@ -141,7 +149,7 @@ export default function Dashboard() {
                </div>
                <div>
                  <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Sim Time</p>
-                 <p className="text-xl font-bold text-white">{state.time || 0}m</p>
+                 <p className="text-xl font-bold text-white">{simTime}m</p>
                </div>
              </div>
           </div>
@@ -150,8 +158,8 @@ export default function Dashboard() {
         {/* Analytics & Decisions */}
         <div className="col-span-4 flex flex-col gap-6">
           <MetricsSidebar 
-            delayUnoptimized={mode === "UNOPTIMIZED" ? state.trains.reduce((acc:any, t:any) => acc + t.delay_min, 0) : 1554} 
-            delayOptimized={mode === "AI_OPTIMIZED" ? state.trains.reduce((acc:any, t:any) => acc + t.delay_min, 0) : 4218}
+            delayUnoptimized={mode === "UNOPTIMIZED" ? currentTotalDelay : 1554} 
+            delayOptimized={mode === "AI_OPTIMIZED" ? currentTotalDelay : 4218}
             mode={mode} 
           />
           <DecisionLog decisions={decisions} />

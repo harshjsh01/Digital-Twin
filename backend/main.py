@@ -119,7 +119,11 @@ async def set_mode(mode: str):
 @app.post("/api/simulate/tick")
 async def manual_tick():
     state = sim_state.tick()
-    return {"time": sim_state.current_time, "trains": state}
+    return {
+        "current_time": sim_state.current_time,
+        "time": sim_state.current_time,
+        "trains": list(state.values())
+    }
 
 if __name__ == "__main__":
     import uvicorn

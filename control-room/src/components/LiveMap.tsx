@@ -55,11 +55,13 @@ export const LiveMap: React.FC<LiveMapProps> = ({ network, trains }) => {
         ))}
 
         {/* Trains */}
-        {trains.map((t) => {
+        {(Array.isArray(trains) ? trains : Object.values(trains || {})).map((t: any) => {
+          if (!t) return null;
           // Simplified position logic for visualization
           // STN_00 to STN_07 corresponds to x=0 to x=700
-          const stnIdx = parseInt(t.current_stn.split("_")[1]);
-          const x = stnIdx * 100 + (t.status === "MOVING" ? t.pos_km * 6.6 : 0) + 50;
+          const stnParts = (t.current_stn || "STN_00").split("_");
+          const stnIdx = stnParts[1] ? parseInt(stnParts[1]) : 0;
+          const x = (isNaN(stnIdx) ? 0 : stnIdx) * 100 + (t.status === "MOVING" ? (t.pos_km || 0) * 6.6 : 0) + 50;
           const y = 50 + 50;
 
           return (
