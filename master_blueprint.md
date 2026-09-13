@@ -2,9 +2,18 @@
 
 This document defines the architectural and technical specification for the full-stack Indian Railways Decision Support Simulation.
 
-## 1. Monorepo Architecture
+## 1. Monorepo Architecture & Evolution
+
+### Phase 1 Baseline Prototype
 - **/backend**: Python (FastAPI), Pandas, Google OR-Tools.
-- **/frontend**: Next.js, Tailwind CSS, Recharts.
+- **/control-room**: Next.js 15, Tailwind CSS, Recharts (Working Command Center).
+
+### Phase 2 Next-Level Architecture (4 Independent Domains)
+*For complete technical details, see [`object.md`](object.md) and [`docs/file.md`](docs/file.md).*
+- **/models** [Engineer 1]: AI/ML datasets, LightGBM delay predictor, Google OR-Tools CP-SAT 6-platform solver.
+- **/backend** [Engineer 2]: Modular FastAPI server (`/app/api/v1`), safety interlocking guard, explainability engine.
+- **/frontend** [Engineer 3]: 6-Platform Junction Simulator (`/frontend/simulator`) & Station Master Cockpit (`/frontend/station-commander`).
+- **/client** [Engineer 4]: Passenger Portal (`/client`) with train search, wait-reason cards, and ₹9/mo x402 + Algorand Testnet micropayments.
 
 ---
 

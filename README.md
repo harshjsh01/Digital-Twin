@@ -42,36 +42,58 @@ An end-to-end full-stack Digital Twin simulation and decision support platform d
 
 ```text
 Railway/
-├── backend/                  # FastAPI & Simulation Backend
-│   ├── api/                  # API routes & schemas
-│   ├── data/                 # Network & timetable JSON data
-│   ├── engine/
-│   │   ├── data_gen.py       # Realistic route & train generator
-│   │   ├── optimizer.py      # Google OR-Tools CP-SAT conflict solver
-│   │   └── simulation.py     # Discrete state manager & ticks
-│   ├── main.py               # FastAPI application entry point
-│   └── requirements.txt      # Python dependencies
-├── control-room/             # Next.js 15 Command Center (Frontend)
-│   ├── src/
-│   │   ├── app/              # Next.js App Router (page.tsx, globals.css)
-│   │   ├── components/       # LiveMap, MetricsSidebar, DecisionLog
-│   │   └── lib/              # UI utilities
-│   ├── package.json          # Node dependencies
-│   └── tailwind.config.ts    # Tailwind styling config
-├── docs/                     # Comprehensive documentation suite
-│   ├── workflow_chart.md     # Workflow flowcharts
-│   ├── FEATURES.md           # Feature breakdown
-│   ├── setup_guide.md        # Setup & installation guide
-│   ├── architecture.md       # Architecture & mathematical formulations
-│   ├── representation.md     # Visual flowcharts & FSM state machines
-│   ├── api_docs.md           # REST API endpoint reference
-│   ├── database_schema.md    # Data models & schemas
-│   ├── mvp_specifications.md # MVP requirements & targets
-│   └── transcript.md         # Team discussions & transcript
-├── master_blueprint.md       # Master technical blueprint
-├── product.md                # Consolidated product file
-├── context.md                # Development context & logs
-└── README.md                 # Primary project overview
+├── models/                                      # [ENGINEER 1 DOMAIN] AI/ML & Optimization
+│   ├── datasets/
+│   │   ├── raw/                                 # Raw historical IR schedules & delay logs
+│   │   └── processed/                           # Normalized feature matrices & graph edges
+│   ├── delay_predictor/
+│   │   └── model_weights/                       # Serialized model checkpoints
+│   └── station_optimizer/                       # Google OR-Tools CP-SAT 6-platform solver
+│
+├── backend/                                     # [ENGINEER 2 DOMAIN] FastAPI & Safety Core
+│   ├── app/
+│   │   ├── api/
+│   │   │   └── v1/                              # REST & WebSocket route handlers
+│   │   ├── core/                                # Simulation engine & digital twin state
+│   │   ├── safety/                              # Anti-Collision interlocking guard
+│   │   ├── services/                            # Recommendations & explainable wait logs
+│   │   ├── payments/                            # x402 & Algorand verification services
+│   │   └── schemas/                             # Shared Pydantic contract schemas
+│   ├── data/                                    # Network & timetable JSON data
+│   ├── engine/                                  # Simulation & baseline optimizer engine
+│   ├── main.py                                  # FastAPI entry point & CORS
+│   └── requirements.txt                         # Python dependencies
+│
+├── frontend/                                    # [ENGINEER 3 DOMAIN] Industrial Dashboards
+│   ├── simulator/                               # 6-Platform Junction + Outer Waiting visualizer
+│   └── station-commander/                       # Station Master Operational Radar & HITL cockpit
+│
+├── client/                                      # [ENGINEER 4 DOMAIN] Passenger Portal & x402
+│   └── src/
+│       ├── components/                          # Train search, wait reason modal, payment modal
+│       ├── lib/                                 # @x402-avm client & Algorand wallet connector
+│       ├── types/                               # TypeScript interfaces matching backend schemas
+│       └── app/                                 # Passenger web portal layout & pages
+│
+├── control-room/                                # Next.js 15 Command Center (Working Prototype)
+├── docs/                                        # Complete Documentation Suite
+│   ├── file.md                                  # Complete file-by-file technical directory
+│   ├── workflow_chart.md                        # Mermaid flowcharts & sequence diagrams
+│   ├── FEATURES.md                              # Complete feature breakdown & status matrix
+│   ├── setup_guide.md                           # Multi-service setup & execution guide
+│   ├── architecture.md                          # Architecture & CP-SAT math formulation
+│   ├── representation.md                        # Visual topologies & FSM state machines
+│   ├── api_docs.md                              # Complete REST & WebSocket API specification
+│   ├── database_schema.md                       # Data models, telemetry & SQL schemas
+│   ├── REFERENCES.md                            # Academic, IR systems & solver literature
+│   ├── mvp_specifications.md                    # MVP targets & verification criteria
+│   └── transcript.md                            # Brainstorming transcripts & technical decisions
+│
+├── master_blueprint.md                          # Foundational blueprint (Phase 1 to Phase 2)
+├── object.md                                    # Phase 2 Next-Level Master Blueprint
+├── product.md                                   # Consolidated unified product specification
+├── context.md                                   # Chronological context & development logs
+└── README.md                                    # Primary project landing page & doc matrix
 ```
 
 ---

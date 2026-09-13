@@ -30,6 +30,31 @@ Ensure the following environments are installed on your host machine:
 
 ---
 
+## 📂 Project Structure Overview
+
+```text
+Railway/
+├── models/                                      # [ENGINEER 1 DOMAIN] AI/ML & Optimization
+│   ├── datasets/ (raw/, processed/)             # Timetables & feature matrices
+│   ├── delay_predictor/                         # ML delay models
+│   └── station_optimizer/                       # Google OR-Tools CP-SAT 6-platform solver
+├── backend/                                     # [ENGINEER 2 DOMAIN] FastAPI & Safety Core
+│   ├── app/ (api/, core/, safety/, services/, payments/, schemas/)
+│   ├── data/ & engine/                          # Simulation data & baseline logic
+│   ├── main.py & requirements.txt               # API runner & dependencies
+├── frontend/                                    # [ENGINEER 3 DOMAIN] Industrial Dashboards
+│   ├── simulator/                               # 6-Platform Junction + Outer Waiting visualizer
+│   └── station-commander/                       # Station Master Operational Radar & HITL cockpit
+├── client/                                      # [ENGINEER 4 DOMAIN] Passenger Portal & x402
+│   └── src/ (components/, lib/, types/, app/)   # Search, wait logs, Algorand wallet checkout
+├── control-room/                                # Next.js 15 Command Center (Working Prototype)
+├── docs/                                        # Complete Documentation Suite
+├── master_blueprint.md & object.md              # Technical & Phase 2 Master Blueprints
+└── product.md, context.md, README.md            # Product specs, context & primary overview
+```
+
+---
+
 ## 🧠 STEP 1: AI & Optimization Setup (`models/`)
 
 ### 1.1 Generate Synthetic High-Density Corridor Dataset
