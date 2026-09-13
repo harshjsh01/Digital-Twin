@@ -104,7 +104,13 @@ Where `interval` is the time window a train occupies a specific track segment.
 
 ---
 
-## 6. Development Workflow
-1. **Phase 2**: Implement the engine and FastAPI service.
-2. **Phase 3**: Develop the OR-Tools solver logic.
-3. **Phase 4**: Build the Next.js visualizer and dashboard.
+## 6. Phase 2 Parallel Development Workflow
+
+The project is structured into four strictly decoupled domains allowing concurrent development with zero merge conflicts:
+
+1. **Domain 1: AI & Optimization (`models/`)** [Engineer 1]: Synthetic high-density timetable generation, LightGBM delay prediction, and Google OR-Tools CP-SAT 6-platform solver (`models/station_optimizer/solver.py`).
+2. **Domain 2: Backend & Safety Systems (`backend/`)** [Engineer 2]: FastAPI v1 API routers (`simulator.py`, `station_master.py`, `passenger.py`, `payments.py`), safety interlocking guard (`interlocking.py`), state engine, and Algorand verifier.
+3. **Domain 3: Industrial Frontends (`frontend/`)** [Engineer 3]: Station Digital Twin Canvas (`frontend/simulator/`) with 6 platforms and 4 outer waiting tracks, plus Station Commander Cockpit (`frontend/station-commander/`) with 1-click HITL approval deck.
+4. **Domain 4: Passenger Portal & x402 Micropayments (`client/`)** [Engineer 4]: Consumer train search, live journey tracking, "Why is My Train Stopped?" explainable card, and `@x402-avm` Algorand Testnet wallet checkout modal (0.1 ALGO / ₹9/mo).
+
+*For complete implementation specifications, see [**`object.md` (Phase 2 Master Plan)**](https://github.com/harshjsh01/Digital-Twin/blob/main/object.md) and [**`docs/file.md` (Complete File Directory)**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/file.md).*
