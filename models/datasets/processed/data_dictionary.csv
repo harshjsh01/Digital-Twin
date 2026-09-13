@@ -1,0 +1,22 @@
+column,role
+Scenario_ID,group/split key
+Corridor,feature
+Train_ID,identifier
+Train_Type,feature
+Priority_Weight,feature
+Train_Length_M,feature
+Section_Distance_KM,feature
+Max_Permissible_Speed,feature
+Scheduled_Dwell_Min,feature
+Current_Delay_Min,feature
+Preceding_Headway_Min,feature
+Sectional_Gradient_Pct,feature
+Weather,feature
+Outer_Signal_Queue_Depth,feature
+Platform_Occupancy_State,feature
+Freight_Surge,feature
+Infrastructure_Failure,feature
+Current_Time_Min,feature
+Scheduled_Departure_Min,feature
+Future_Horizon_Min,metadata
+Future_Delay_15Min,TARGET

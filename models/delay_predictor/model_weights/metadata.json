@@ -1,0 +1,11 @@
+{
+  "data_generation": "15-minute state-transition simulator",
+  "target": "Future_Delay_15Min",
+  "scenario_split": "70/15/15",
+  "rows": 240000,
+  "mae_min": 0.8249700472604378,
+  "rmse_min": 1.091929801747351,
+  "r2": 0.9977783228264664,
+  "p10_p90_coverage": 0.7881944444444444,
+  "best_iteration": 705
+}
