@@ -1,31 +1,46 @@
-# dependencies
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+backend/data/*.json
+backend/data/*.log
+
+# Node & Next.js Dependencies & Builds
+node_modules/
 /node_modules
 /.pnp
 .pnp.js
 .yarn/cache
 
-# testing
-/coverage
-
-# next.js
+.next/
 /.next/
+out/
 /out/
-
-# production
+build/
 /build
 
-# misc
-.DS_Store
-*.pem
+# Testing & Coverage
+/coverage
 
-# debug
+# Environment & Local Secrets
+.env*
+.env*.local
+*.local
+
+# Typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+
+# Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# local env files
-.env*.local
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
+# System & OS
+.DS_Store
+*.pem

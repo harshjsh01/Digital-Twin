@@ -4,3 +4,9 @@ pandas
 ortools
 pydantic
 python-multipart
+py-algorand-sdk
+python-jose
+httpx
+websockets
+bcrypt
+pymongo
