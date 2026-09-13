@@ -285,6 +285,10 @@ async def get_baseline_network():
             {"id": "STN_JUNCTION_01", "name": layout["name"], "coords": {"x": 500, "y": 50}},
             {"id": "STN_07", "name": "Station H", "coords": {"x": 1000, "y": 50}}
         ],
+        "segments": [
+            {"id": "SEG_00", "from_stn": "STN_00", "to_stn": "STN_JUNCTION_01"},
+            {"id": "SEG_01", "from_stn": "STN_JUNCTION_01", "to_stn": "STN_07"}
+        ],
         "platforms": layout["platforms"],
         "outer_waiting_tracks": layout["outer_waiting_tracks"],
         "signals": layout["signals"],

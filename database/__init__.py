@@ -15,8 +15,8 @@ try:
     db = client[DB_NAME]
     print(f"Connected to MongoDB at {MONGODB_URI}, Database: '{DB_NAME}'")
 except Exception as e:
-    print(f"Warning: MongoDB connection error ({e}). Initializing client anyway.")
-    client = MongoClient(MONGODB_URI)
+    print(f"Warning: MongoDB connection error ({e}). Initializing client with 2000ms timeout.")
+    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=2000)
     db = client[DB_NAME]
 
 from database.users import (
