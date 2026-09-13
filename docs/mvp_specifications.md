@@ -64,3 +64,37 @@ This document outlines the scope, functional requirements, non-functional target
 | **Blockchain Finality** | $\approx 3.3\text{ seconds}$ | Algorand Testnet round confirmation |
 | **Frontend FPS** | Smooth $60\text{ FPS}$ track animation | Chrome DevTools Performance Profiler |
 | **Team Collaboration** | **Zero Git Merge Conflicts** | 4 decoupled directories (`models/`, `backend/`, `frontend/`, `client/`) |
+
+---
+
+## 🏗️ 4. Domain Ownership & MVP Deliverable Mapping
+
+| Domain / Folder | Engineer Owner | Core Deliverables | Success Target |
+| :--- | :--- | :--- | :--- |
+| **`models/`** | **Engineer 1** | Synthetic high-density timetable generator, LightGBM delay predictor, Google OR-Tools CP-SAT 6-platform solver (`solver.py`, `constraints.py`, `benchmarks.py`). | Sub-50ms solve time; zero overlapping track reservations across 100k test ticks. |
+| **`backend/`** | **Engineer 2** | FastAPI v1 modular routers (`simulator.py`, `station_master.py`, `passenger.py`, `payments.py`), safety interlocking supervisor (`interlocking.py`, `collision_guard.py`), in-memory state engine, and x402 Algorand verifier. | Sub-15ms REST latency; 60Hz WS broadcast; 100% fail-safe rejection of conflicting routes. |
+| **`frontend/`** | **Engineer 3** | 6-platform SVG track canvas (`frontend/simulator/`) with 4 outer waiting tracks, switch point states, and dynamic signal heads; Station Master Radar cockpit (`frontend/station-commander/`) with 1-click HITL Approve/Override deck. | 60 FPS smooth animation; bi-directional WebSocket HITL sync in < 100ms. |
+| **`client/`** | **Engineer 4** | Mobile-first passenger portal (`client/`) with train search, live GPS journey tracker, "Why is My Train Stopped?" explainable card, and `@x402-avm` Algorand Testnet wallet checkout modal (0.1 ALGO / ₹9/mo). | Seamless wallet connection, instant HTTP 402 challenge handling, and verified on-chain access unlock. |
+
+---
+
+## ✅ 5. MVP Acceptance & Verification Checklist
+
+- [ ] **CP-SAT Solver Benchmark**: `python models/station_optimizer/benchmarks.py` returns 0 collisions, 0 deadlocks across 100,000 continuous simulation minutes.
+- [ ] **Anti-Collision Guard Invariant**: Attempting to force two trains onto Platform 1 throws a strict `SAFETY_INTERLOCK_VIOLATION` with immediate red signal aspect.
+- [ ] **Station Master HITL Flow**: Station Master clicking `[APPROVE]` immediately locks the route in `backend`, reflects green signal in `frontend/simulator`, and removes the train from the pending radar queue.
+- [ ] **Passenger Explainability**: Stationary train returns detailed reason: *"Held at Outer Holding Track 1 for 6 minutes to grant precedence to Vande Bharat 20901."*
+- [ ] **x402 Algorand Subscription**: Commuter without pass receives HTTP 402; paying 0.1 ALGO via Pera/Defly wallet on Algorand Testnet unlocks deep telemetry with confirmed transaction ID.
+- [ ] **Zero Git Merge Conflicts**: All 4 developers work simultaneously within their assigned isolated folders (`models/`, `backend/`, `frontend/`, `client/`).
+
+---
+
+## 🔗 6. Cross-References & Traceability Links
+
+- [**Phase 2 Master Plan (`object.md`)**](https://github.com/harshjsh01/Digital-Twin/blob/main/object.md)
+- [**Complete File Directory (`docs/file.md`)**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/file.md)
+- [**Consolidated Product Specification (`product.md`)**](https://github.com/harshjsh01/Digital-Twin/blob/main/product.md)
+- [**Development Context & Resolved Issues (`context.md`)**](https://github.com/harshjsh01/Digital-Twin/blob/main/context.md)
+- [**Multi-Service Setup Guide (`docs/setup_guide.md`)**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/setup_guide.md)
+- [**REST & WebSocket API Docs (`docs/api_docs.md`)**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/api_docs.md)
+

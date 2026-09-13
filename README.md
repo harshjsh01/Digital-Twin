@@ -14,14 +14,14 @@ An end-to-end full-stack Digital Twin simulation and decision support platform d
 | [**Transcript & Brainstorming**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/transcript.md) | Team discussion, technical brainstorming, and technology selection transcript. |
 | [**product.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/product.md) | Complete unified product specification combining all project dimensions. |
 | [**context.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/context.md) | Complete project context, resolved issues, bug fixes, and development logs. |
-| [**./docs/workflow_chart.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/workflow_chart.md) | End-to-end user journey and system workflow Mermaid flowcharts. |
-| [**./docs/FEATURES.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/FEATURES.md) | Complete feature breakdown with flagship highlights. |
-| [**./docs/setup_guide.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/setup_guide.md) | Installation, configuration, and startup instructions. |
-| [**./docs/architecture.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/architecture.md) | System architecture, FastAPI backend routing, Next.js frontend, and OR-Tools solver. |
-| [**./docs/representation.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/representation.md) | System flow charts, finite state machines (FSM), and visual track representations. |
-| [**./docs/api_docs.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/api_docs.md) | REST API endpoint reference with request and response schemas. |
-| [**./docs/database_schema.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/database_schema.md) | Network topology, train timetable, and telemetry data models. |
-| [**./docs/REFERENCES.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/REFERENCES.md) | Comprehensive academic, industrial, and technical literature references. |
+| [**Workflow Flowcharts**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/workflow_chart.md) | End-to-end user journey and system workflow Mermaid flowcharts. |
+| [**Feature Breakdown & Status**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/FEATURES.md) | Complete feature breakdown with flagship highlights. |
+| [**Setup & Execution Guide**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/setup_guide.md) | Installation, configuration, and startup instructions. |
+| [**System Architecture**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/architecture.md) | System architecture, FastAPI backend routing, Next.js frontend, and OR-Tools solver. |
+| [**Visual Topologies & State Machines**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/representation.md) | System flow charts, finite state machines (FSM), and visual track representations. |
+| [**REST & WebSocket API Docs**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/api_docs.md) | REST API endpoint reference with request and response schemas. |
+| [**Database & Telemetry Schemas**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/database_schema.md) | Network topology, train timetable, and telemetry data models. |
+| [**Academic & Technical References**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/REFERENCES.md) | Comprehensive academic, industrial, and technical literature references. |
 
 ---
 
