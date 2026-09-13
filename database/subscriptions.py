@@ -1,20 +1,19 @@
-"""
-MongoDB Collection: subscriptions
-Stores on-chain and passenger subscription passes.
-"""
-
+import uuid
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 import pymongo
-from database import db
+import database
 
-subscriptions_collection = db["subscriptions"]
+_IN_MEMORY_SUBSCRIPTIONS: Dict[str, Dict[str, Any]] = {}
 
-try:
-    subscriptions_collection.create_index([("wallet_address", pymongo.ASCENDING)])
-    subscriptions_collection.create_index([("tx_id", pymongo.ASCENDING)], unique=True, sparse=True)
-except Exception as e:
-    print(f"Notice: Subscriptions indexes note: {e}")
+subscriptions_collection = database.db["subscriptions"] if database.db is not None else None
+
+if subscriptions_collection is not None:
+    try:
+        subscriptions_collection.create_index([("wallet_address", pymongo.ASCENDING)])
+        subscriptions_collection.create_index([("tx_id", pymongo.ASCENDING)], unique=True, sparse=True)
+    except Exception as e:
+        print(f"Notice: Subscriptions indexes note: {e}")
 
 def save_subscription(
     wallet_address: str,
@@ -35,21 +34,42 @@ def save_subscription(
         "expires_at": expires_at,
         "is_active": True
     }
-    subscriptions_collection.update_one(
-        {"wallet_address": wallet_address},
-        {"$set": doc},
-        upsert=True
-    )
+    if subscriptions_collection is not None:
+        try:
+            subscriptions_collection.update_one(
+                {"wallet_address": wallet_address},
+                {"$set": doc},
+                upsert=True
+            )
+            return doc
+        except Exception:
+            pass
+    _IN_MEMORY_SUBSCRIPTIONS[wallet_address] = doc
+    doc["_id"] = str(uuid.uuid4())
     return doc
 
 def get_subscription_by_wallet(wallet_address: str) -> Optional[Dict[str, Any]]:
-    doc = subscriptions_collection.find_one({"wallet_address": wallet_address})
-    if doc:
-        doc["_id"] = str(doc["_id"])
-    return doc
+    if subscriptions_collection is not None:
+        try:
+            doc = subscriptions_collection.find_one({"wallet_address": wallet_address})
+            if doc:
+                doc["_id"] = str(doc["_id"])
+            return doc
+        except Exception:
+            pass
+    return _IN_MEMORY_SUBSCRIPTIONS.get(wallet_address)
 
 def get_subscription_by_username(username: str) -> Optional[Dict[str, Any]]:
-    doc = subscriptions_collection.find_one({"username": username.strip().lower()})
-    if doc:
-        doc["_id"] = str(doc["_id"])
-    return doc
+    clean_user = username.strip().lower()
+    if subscriptions_collection is not None:
+        try:
+            doc = subscriptions_collection.find_one({"username": clean_user})
+            if doc:
+                doc["_id"] = str(doc["_id"])
+            return doc
+        except Exception:
+            pass
+    for s in _IN_MEMORY_SUBSCRIPTIONS.values():
+        if s.get("username", "").strip().lower() == clean_user:
+            return s
+    return None

@@ -1,13 +1,11 @@
-"""
-MongoDB Collection: station_master_audit_log
-Audit trail of Station Master approvals, overrides, and emergency stops.
-"""
-
+import uuid
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
-from database import db
+import database
 
-audit_logs_collection = db["station_master_audit_log"]
+_IN_MEMORY_AUDITS: List[Dict[str, Any]] = []
+
+audit_logs_collection = database.db["station_master_audit_log"] if database.db is not None else None
 
 def log_audit(
     audit_id: str,
@@ -31,14 +29,26 @@ def log_audit(
         "safety_check_passed": safety_check_passed,
         "timestamp": now
     }
-    audit_logs_collection.insert_one(doc)
-    doc["_id"] = str(doc.get("_id", ""))
+    if audit_logs_collection is not None:
+        try:
+            audit_logs_collection.insert_one(doc)
+            doc["_id"] = str(doc.get("_id", ""))
+            return doc
+        except Exception:
+            pass
+    doc["_id"] = str(uuid.uuid4())
+    _IN_MEMORY_AUDITS.insert(0, doc)
     return doc
 
 def get_recent_audits(limit: int = 50) -> List[Dict[str, Any]]:
-    cursor = audit_logs_collection.find().sort("timestamp", -1).limit(limit)
-    audits = []
-    for doc in cursor:
-        doc["_id"] = str(doc["_id"])
-        audits.append(doc)
-    return audits
+    if audit_logs_collection is not None:
+        try:
+            cursor = audit_logs_collection.find().sort("timestamp", -1).limit(limit)
+            audits = []
+            for doc in cursor:
+                doc["_id"] = str(doc["_id"])
+                audits.append(doc)
+            return audits
+        except Exception:
+            pass
+    return _IN_MEMORY_AUDITS[:limit]

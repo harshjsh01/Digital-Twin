@@ -10,14 +10,16 @@ MONGODB_URI = os.getenv("MONGODB_URI", "mongodb://localhost:27017")
 DB_NAME = os.getenv("MONGODB_DB_NAME", "aahavaan_rail")
 
 try:
-    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=2000)
+    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=1000)
     client.server_info()
     db = client[DB_NAME]
+    IS_CONNECTED = True
     print(f"Connected to MongoDB at {MONGODB_URI}, Database: '{DB_NAME}'")
 except Exception as e:
-    print(f"Warning: MongoDB connection error ({e}). Initializing client with 2000ms timeout.")
-    client = MongoClient(MONGODB_URI, serverSelectionTimeoutMS=2000)
-    db = client[DB_NAME]
+    IS_CONNECTED = False
+    client = None
+    db = None
+    print(f"Notice: MongoDB offline ({e}). Activating in-memory fallback store.")
 
 from database.users import (
     create_user,
