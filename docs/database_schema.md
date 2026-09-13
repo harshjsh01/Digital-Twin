@@ -273,3 +273,83 @@ CREATE TABLE passenger_wait_logs (
 
 CREATE INDEX idx_wait_train ON passenger_wait_logs(train_id);
 ```
+
+---
+
+## 🍃 5. MongoDB Document Database Schemas (`database/`)
+
+The application stores user credentials, authentication tokens, active subscriptions, and operational logs in MongoDB (`aahavaan_rail` database), managed via the root `database/` package.
+
+### Architecture & Collections:
+- `database/__init__.py`: Initializes MongoDB client and exports collection models.
+- `database/users.py`: User accounts, bcrypt passwords, and `is_premium` status.
+- `database/subscriptions.py`: Active ₹9 subscription passes and transaction proofs.
+- `database/audit_logs.py`: Station Master approval and override audit log collection.
+- `database/wait_logs.py`: Passenger explainability logs and conflict history.
+
+### 5.1 Collection: `users`
+```json
+{
+  "_id": "ObjectId('66e4a28f42d1b821...')",
+  "username": "rajesh_commuter",
+  "email": "rajesh@example.com",
+  "hashed_password": "$2b$12$e8x...",
+  "full_name": "Rajesh Kumar",
+  "wallet_address": "ALGORAND_TESTNET_WALLET_ADDRESS",
+  "is_premium": true,
+  "created_at": "2026-09-13T10:30:00Z",
+  "updated_at": "2026-09-13T10:32:00Z"
+}
+```
+**Indexes**:
+- `username`: Unique Ascending
+- `email`: Unique Ascending
+
+### 5.2 Collection: `subscriptions`
+```json
+{
+  "_id": "ObjectId('66e4a28f42d1b822...')",
+  "wallet_address": "ALGORAND_TESTNET_WALLET_ADDRESS",
+  "tx_id": "W7X3K6Y2ABCXYZ1234567890TESTNETALGORANDTRANSACTIONHASH",
+  "amount_microalgos": 100000,
+  "payment_network": "algorand-testnet",
+  "username": "rajesh_commuter",
+  "is_active": true,
+  "created_at": "2026-09-13T10:30:00Z",
+  "expires_at": "2026-10-13T10:30:00Z"
+}
+```
+**Indexes**:
+- `wallet_address`: Ascending
+- `tx_id`: Unique Sparse
+
+### 5.3 Collection: `station_master_audit_log`
+```json
+{
+  "_id": "ObjectId('66e4a28f42d1b823...')",
+  "audit_id": "3f8b0e8c-5d9a-4e8b-b1a9-9c5e8f4a1b2c",
+  "recommendation_id": "REC_8841",
+  "train_id": "T_12301",
+  "recommended_track": "PLATFORM_2",
+  "actual_assigned_track": "PLATFORM_1",
+  "action_type": "APPROVED_AND_LOCKED",
+  "dispatcher_id": "SM_OFFICER_04",
+  "safety_check_passed": true,
+  "timestamp": "2026-09-13T10:31:00Z"
+}
+```
+
+### 5.4 Collection: `passenger_wait_logs`
+```json
+{
+  "_id": "ObjectId('66e4a28f42d1b824...')",
+  "log_id": "a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d",
+  "train_id": "T_12301",
+  "station_or_outer_block": "Outer Holding Track 1 (Before Junction)",
+  "started_at_min": 137,
+  "cleared_at_min": 145,
+  "conflicting_train_id": "T_20901",
+  "plain_english_reason": "Your train is currently held at Outer Holding Track 1 to grant precedence to Vande Bharat Express...",
+  "created_at": "2026-09-13T10:32:00Z"
+}
+```

@@ -14,8 +14,10 @@ This document provides exhaustive reference specifications for all REST API endp
 
 ## 📌 Complete Endpoint Matrix
 
-| Domain | Method | Endpoint | Description |
-| :--- | :--- | :--- | :--- |
+| **Authentication** | `POST` | `/api/v1/auth/register` | Registers a new passenger account in MongoDB. |
+| | `POST` | `/api/v1/auth/login` | Authenticates passenger credentials and issues JWT token. |
+| | `GET` | `/api/v1/auth/me` | Retrieves authenticated user profile and live `is_premium` status. |
+| | `POST` | `/api/v1/auth/upgrade-premium` | Upgrades/toggles user's `is_premium` status in MongoDB. |
 | **Simulator** | `GET` | `/api/v1/simulator/layout` | 6 platforms, 4 outer waiting tracks, switch points, and signal coordinates. |
 | | `GET` | `/api/v1/simulator/state` | Instantaneous physical state (train coordinates, occupied circuits, switches). |
 | | `POST` | `/api/v1/simulator/control/tick` | Steps physical and discrete simulation forward. |
@@ -179,7 +181,8 @@ Approves an AI recommendation, engaging the digital interlocking safety supervis
 #### `GET /api/v1/passenger/train/T_12301/why-stopped`
 Explainable AI endpoint delivering the transparent operational reason why a train is stationary.
 
-*Case A: Unpaid Request (No Active Subscription)*
+*Case A: Unpaid / Non-Premium Request*
+- Triggered if unauthenticated, or if logged in with standard account (`is_premium: false`), or without valid payment proof.
 - **Response**: `HTTP 402 Payment Required`
 - **Headers**:
   - `X-Payment-Address`: `AAHAVAAN7RAILX402TREASURYTESTNETWALLET`
@@ -190,7 +193,7 @@ Explainable AI endpoint delivering the transparent operational reason why a trai
 ```json
 {
   "error": "Payment Required",
-  "message": "Access to explainable real-time delay diagnostics requires an active ₹9/month Aahavaan Pass settled via x402 on Algorand.",
+  "message": "Access to explainable real-time delay diagnostics requires an active ₹9/month Aahavaan Pass settled via x402 on Algorand. Log in with a Premium account or purchase a pass.",
   "price_inr": 9.0,
   "price_microalgos": 100000,
   "currency": "ALGO",
@@ -198,8 +201,8 @@ Explainable AI endpoint delivering the transparent operational reason why a trai
 }
 ```
 
-*Case B: Paid / Authenticated Request*
-- **Request Headers**: `Authorization: Bearer <VALID_JWT>` or `X-Payment-Proof: <ALGORAND_TX_ID>`
+*Case B: Paid / Premium Authenticated Request*
+- **Request Headers**: `Authorization: Bearer <VALID_PREMIUM_JWT>` or `X-Payment-Proof: <ALGORAND_TX_ID>`
 - **Response (`200 OK`)**:
 ```json
 {
@@ -223,7 +226,7 @@ Explainable AI endpoint delivering the transparent operational reason why a trai
 ### 4. 💳 x402 + Algorand Payment Verification Endpoints
 
 #### `POST /api/v1/payments/verify-proof`
-Validates an on-chain transaction hash submitted by `@x402-avm` client or Pera Wallet.
+Validates an on-chain transaction hash submitted by `@x402-avm` client or Pera Wallet, syncs with MongoDB `subscriptions`, and upgrades the associated user account to `is_premium: true`.
 
 **Request Body**:
 ```json
@@ -243,6 +246,101 @@ Validates an on-chain transaction hash submitted by `@x402-avm` client or Pera W
   "subscription_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
   "valid_until": "2026-10-13T09:39:16Z",
   "message": "Subscription active. Welcome to Aahavaan Premium Rail Telemetry."
+}
+```
+
+---
+
+### 5. 🔐 Passenger Authentication & User Management Endpoints
+
+#### `POST /api/v1/auth/register`
+Creates a new passenger account in the MongoDB `users` collection with encrypted password and initial `is_premium: false`.
+
+**Request Body**:
+```json
+{
+  "username": "rajesh_commuter",
+  "email": "rajesh@example.com",
+  "password": "SecurePassword123",
+  "full_name": "Rajesh Kumar",
+  "wallet_address": "ALGORAND_TESTNET_WALLET_ADDRESS"
+}
+```
+
+**Response (`201 Created`)**:
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "is_premium": false,
+  "user": {
+    "id": "66e4a28f42d1b821...",
+    "username": "rajesh_commuter",
+    "email": "rajesh@example.com",
+    "full_name": "Rajesh Kumar",
+    "is_premium": false,
+    "wallet_address": "ALGORAND_TESTNET_WALLET_ADDRESS",
+    "created_at": "2026-09-13T10:30:00Z"
+  },
+  "message": "User registered successfully."
+}
+```
+
+#### `POST /api/v1/auth/login`
+Authenticates existing credentials, issuing a signed JWT access token containing identity and premium tier permissions.
+
+**Request Body**:
+```json
+{
+  "username": "rajesh_commuter",
+  "password": "SecurePassword123"
+}
+```
+
+**Response (`200 OK`)**:
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "token_type": "bearer",
+  "is_premium": false,
+  "user": {
+    "id": "66e4a28f42d1b821...",
+    "username": "rajesh_commuter",
+    "email": "rajesh@example.com",
+    "full_name": "Rajesh Kumar",
+    "is_premium": false,
+    "wallet_address": "ALGORAND_TESTNET_WALLET_ADDRESS",
+    "created_at": "2026-09-13T10:30:00Z"
+  },
+  "message": "Login successful."
+}
+```
+
+#### `GET /api/v1/auth/me`
+Fetches authenticated user information and live `is_premium` status from MongoDB.
+- **Request Header**: `Authorization: Bearer <TOKEN>`
+- **Response (`200 OK`)**:
+```json
+{
+  "id": "66e4a28f42d1b821...",
+  "username": "rajesh_commuter",
+  "email": "rajesh@example.com",
+  "full_name": "Rajesh Kumar",
+  "is_premium": true,
+  "wallet_address": "ALGORAND_TESTNET_WALLET_ADDRESS",
+  "created_at": "2026-09-13T10:30:00Z"
+}
+```
+
+#### `POST /api/v1/auth/upgrade-premium`
+Updates the user's `is_premium` status in MongoDB to `true`.
+- **Request Header**: `Authorization: Bearer <TOKEN>`
+- **Response (`200 OK`)**:
+```json
+{
+  "username": "rajesh_commuter",
+  "is_premium": true,
+  "message": "Premium status updated successfully."
 }
 ```
 

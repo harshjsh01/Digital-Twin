@@ -18,6 +18,13 @@ Currently, backend logic, models, and UI are co-located in legacy folders (`back
 
 ```text
 Railway/
+├── database/                         # [PERSISTENCE LAYER] - MongoDB Database & Collections
+│   ├── __init__.py                   # MongoDB client connection & collection registry
+│   ├── users.py                      # User accounts, login credentials & is_premium status
+│   ├── subscriptions.py              # 30-day active passenger passes & Algorand proofs
+│   ├── audit_logs.py                 # Station Master approval/override audit trail
+│   └── wait_logs.py                  # Passenger explainable delay reason history
+│
 ├── models/                           # [ENGINEER 1 DOMAIN] - AI/ML & Optimization
 │   ├── datasets/                     # Raw & processed train movement/delay datasets
 │   │   ├── raw/                      # Historical IR timetables, COA delay logs, NTES feeds
@@ -37,12 +44,15 @@ Railway/
 │   ├── app/
 │   │   ├── api/                      # REST & WebSocket API Routers
 │   │   │   ├── v1/
+│   │   │   │   ├── auth.py           # Passenger account registration, login & JWT auth
 │   │   │   │   ├── simulator.py      # Simulator state, track circuits, signal aspect feeds
 │   │   │   │   ├── station_master.py # Incoming queue, AI recommendations, HITL approval
 │   │   │   │   ├── passenger.py      # Train search, live tracking, explainable wait-reasons
 │   │   │   │   └── payments.py       # x402 HTTP verification & Algorand ledger hooks
 │   │   │   └── router.py             # Root API router
 │   │   ├── core/                     # Simulation Engine & Event Loop
+│   │   │   ├── security.py           # Bcrypt hashing & JWT access token management
+│   │   │   ├── auth.py               # User authentication dependencies & session resolution
 │   │   │   ├── simulation_engine.py  # Discrete-event engine (minute/sub-second ticks)
 │   │   │   ├── state_manager.py      # In-memory synchronized digital twin state
 │   │   │   └── websocket_manager.py  # Real-time WebSocket connection hub
@@ -59,6 +69,7 @@ Railway/
 │   │   │   ├── x402_verifier.py      # HTTP 402 header & transaction verification
 │   │   │   └── subscription_db.py    # Active passenger pass database (SQLite/Postgres)
 │   │   └── schemas/                  # Pydantic Request/Response Models (Frozen Contract)
+│   │       ├── auth.py
 │   │       ├── simulation.py
 │   │       ├── station.py
 │   │       ├── train.py
@@ -209,6 +220,7 @@ The backend acts as the authoritative truth engine, decoupling raw computation f
 +---------------------------------------------------------------------------------------+
 |                                                                                       |
 |   [API LAYER]                                                                         |
+|   ├── /api/v1/auth             -> Passenger registration, login, JWT token issuance   |
 |   ├── /api/v1/simulator        -> Track circuits, switch points, signal aspects       |
 |   ├── /api/v1/station-master   -> Live train radar, AI suggestions, HITL approvals    |
 |   ├── /api/v1/passenger        -> Train search, live tracking, explainable wait logs  |
@@ -218,9 +230,11 @@ The backend acts as the authoritative truth engine, decoupling raw computation f
 |   ├── State Manager            -> Synchronized 1-second physical clock & 1-min sim    |
 |   ├── Recommendation Engine    -> Solves optimal platform & holding queue             |
 |   ├── Explainability Engine    -> Converts track constraints into plain English logs  |
-|   └── Safety Interlocking      -> Fail-safe route locking & anti-collision barrier    |
+|   ├── Safety Interlocking      -> Fail-safe route locking & anti-collision barrier    |
+|   └── Auth & User Security     -> Bcrypt password encryption & JWT identity tokens    |
 |                                                                                       |
-|   [BLOCKCHAIN CONNECTOR]                                                              |
+|   [PERSISTENCE & BLOCKCHAIN]                                                          |
+|   ├── MongoDB Database Layer   -> Users, subscriptions, audit logs & wait records     |
 |   ├── Algorand Testnet Client  -> Validates transaction hashes & ASA tokens           |
 |   └── GoPlausible Facilitator  -> Verifies HTTP 402 settlements                       |
 |                                                                                       |
@@ -258,6 +272,16 @@ When a train is stopped at an outer signal, station loop, or platform, passenger
 - Validates the incoming header `X-Payment-Proof` against Algorand Testnet.
 - Checks whether the sender transferred `₹9` worth of microAlgos (e.g., 0.1 ALGO) to the official treasury wallet.
 - Stores active subscriptions in `subscription_db` mapped to the user's Algorand wallet address, issuing an auth token valid for 30 days.
+
+### 2.4 Passenger Authentication, MongoDB Persistence & Premium Access Tier
+To support account management and persistent premium privileges across devices:
+- **MongoDB Database**: Connected via the root `database/` folder (`aahavaan_rail` database).
+- **Users Collection**: Stores passenger login credentials with bcrypt hashing (`hashed_password`), unique usernames/emails, linked Algorand wallet addresses, and `is_premium` status.
+- **Access Control & Telemetry Gate**:
+  - Registered passengers login via `/api/v1/auth/login` to receive a signed JWT token.
+  - When accessing deep telemetry (`/api/v1/passenger/train/{id}/why-stopped`), passengers with `is_premium: true` gain instant unlocked access.
+  - Standard passengers (`is_premium: false`) or unauthenticated visitors are presented with the RFC HTTP 402 challenge, with 1-click checkout on Algorand Testnet.
+  - Verified on-chain transactions automatically update the user's `is_premium` flag to `true` in MongoDB.
 
 ---
 
