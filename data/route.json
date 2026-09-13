@@ -1,0 +1,139 @@
+{
+    "stations": [
+        {
+            "name": "Station A",
+            "id": "STN_A",
+            "platforms": [
+                {
+                    "id": "STN_A_P1",
+                    "type": "main",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_A_L1",
+                    "type": "loop",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_A_L2",
+                    "type": "loop",
+                    "capacity": 1
+                }
+            ]
+        },
+        {
+            "name": "Station B",
+            "id": "STN_B",
+            "platforms": [
+                {
+                    "id": "STN_B_P1",
+                    "type": "main",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_B_L1",
+                    "type": "loop",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_B_L2",
+                    "type": "loop",
+                    "capacity": 1
+                }
+            ]
+        },
+        {
+            "name": "Station C",
+            "id": "STN_C",
+            "platforms": [
+                {
+                    "id": "STN_C_P1",
+                    "type": "main",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_C_L1",
+                    "type": "loop",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_C_L2",
+                    "type": "loop",
+                    "capacity": 1
+                }
+            ]
+        },
+        {
+            "name": "Station D",
+            "id": "STN_D",
+            "platforms": [
+                {
+                    "id": "STN_D_P1",
+                    "type": "main",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_D_L1",
+                    "type": "loop",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_D_L2",
+                    "type": "loop",
+                    "capacity": 1
+                }
+            ]
+        },
+        {
+            "name": "Station E",
+            "id": "STN_E",
+            "platforms": [
+                {
+                    "id": "STN_E_P1",
+                    "type": "main",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_E_L1",
+                    "type": "loop",
+                    "capacity": 1
+                },
+                {
+                    "id": "STN_E_L2",
+                    "type": "loop",
+                    "capacity": 1
+                }
+            ]
+        }
+    ],
+    "segments": [
+        {
+            "id": "SEG_AB",
+            "from": "STN_A",
+            "to": "STN_B",
+            "distance_km": 20.0,
+            "capacity": 1
+        },
+        {
+            "id": "SEG_BC",
+            "from": "STN_B",
+            "to": "STN_C",
+            "distance_km": 20.0,
+            "capacity": 1
+        },
+        {
+            "id": "SEG_CD",
+            "from": "STN_C",
+            "to": "STN_D",
+            "distance_km": 20.0,
+            "capacity": 1
+        },
+        {
+            "id": "SEG_DE",
+            "from": "STN_D",
+            "to": "STN_E",
+            "distance_km": 20.0,
+            "capacity": 1
+        }
+    ]
+}
