@@ -283,6 +283,12 @@ To support account management and persistent premium privileges across devices:
   - Standard passengers (`is_premium: false`) or unauthenticated visitors are presented with the RFC HTTP 402 challenge, with 1-click checkout on Algorand Testnet.
   - Verified on-chain transactions automatically update the user's `is_premium` flag to `true` in MongoDB.
 
+### 2.5 System Health, Latency Diagnostics & Global Error Handling
+To ensure high-availability monitoring and failsafe operations:
+- **Root Discovery (`GET /`)**: Returns service metadata, OpenAPI docs links, and operational status.
+- **Healthcheck & Latency (`GET /healthcheck`, alias `GET /health`)**: Continuously monitors the FastAPI gateway and MongoDB cluster, measuring and reporting processing and database ping round-trip latency in milliseconds (`latency_ms`).
+- **Global Uncaught Exception Handler**: Intercepts unhandled runtime errors in `backend/main.py`, preserving HTTP status codes and headers while formatting runtime exceptions into structured JSON error models (`500 Internal Server Error`).
+
 ---
 
 ## 🖥️ 3. The Three Frontend Applications Breakdown

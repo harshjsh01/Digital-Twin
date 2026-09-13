@@ -207,9 +207,35 @@ def run_tests():
     assert err_json["method"] == "GET"
     print("[PASS] Global exception handler successfully caught unhandled exception and returned structured 500 JSON")
 
+    print("\n--- 8. Testing Root & Healthcheck Endpoints ---")
+    root_res = client.get("/")
+    assert root_res.status_code == 200
+    root_data = root_res.json()
+    assert "service" in root_data
+    assert root_data["status"] == "ONLINE"
+    assert "healthcheck" in root_data["endpoints"]
+    print(f"[PASS] GET / returned service metadata: {root_data['service']} (version {root_data['version']})")
+
+    health_res = client.get("/healthcheck")
+    assert health_res.status_code == 200
+    health_data = health_res.json()
+    assert health_data["status"] in ["healthy", "degraded"]
+    assert "latency_ms" in health_data
+    assert isinstance(health_data["latency_ms"], (int, float))
+    assert "database" in health_data
+    assert "simulation" in health_data
+    print(f"[PASS] GET /healthcheck returned status '{health_data['status']}' with latency: {health_data['latency_ms']} ms")
+
+    # Verify alias /health
+    health_alias_res = client.get("/health")
+    assert health_alias_res.status_code == 200
+    assert "latency_ms" in health_alias_res.json()
+    print(f"[PASS] GET /health alias passed with latency: {health_alias_res.json()['latency_ms']} ms")
+
     print("\n=======================================================")
-    print("ALL TESTS (AUTH + MONGODB + APIS + ERROR HANDLER) PASSED!")
+    print("ALL TESTS (AUTH + MONGODB + APIS + HEALTHCHECK) PASSED!")
     print("=======================================================")
 
 if __name__ == "__main__":
     run_tests()
+

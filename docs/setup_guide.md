@@ -101,7 +101,29 @@ SUBSCRIPTION_PRICE_MICROALGOS=100000
 python main.py
 ```
 > Server will be listening on **`http://localhost:8000`**  
-> Interactive OpenAPI documentation: **`http://localhost:8000/docs`**
+> Interactive OpenAPI documentation: **`http://localhost:8000/docs`**  
+> ReDoc documentation: **`http://localhost:8000/redoc`**
+
+### 2.5 Verify Backend & Database Health
+Confirm the server is responding and check real-time latency across the API and MongoDB:
+```powershell
+curl http://localhost:8000/healthcheck
+```
+*Expected Response:*
+```json
+{
+  "status": "healthy",
+  "latency_ms": 0.48,
+  "database": {
+    "status": "connected",
+    "latency_ms": 0.35
+  },
+  "simulation": {
+    "is_running": true,
+    "trains_count": 14
+  }
+}
+```
 
 ---
 

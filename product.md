@@ -42,12 +42,13 @@ Manual First-In, First-Out (FIFO) clearing by sectional controllers causes high-
 
 ---
 
-## 4. System Architecture & 4-Domain Monorepo Layout
-The project is strictly partitioned into four independent, decoupled domains:
+## 4. System Architecture & 5-Domain Monorepo Layout
+The project is strictly partitioned into independent, decoupled domains:
 1. **`/models/`** (Engineer 1): Datasets, LightGBM delay predictor, Google OR-Tools CP-SAT 6-platform solver.
-2. **`/backend/`** (Engineer 2): FastAPI v1 APIs, simulation state engine, safety interlocking guard, explainability engine.
-3. **`/frontend/`** (Engineer 3): 6-Platform Station Simulator (`frontend/simulator`) and Station Commander Portal (`frontend/station-commander`).
-4. **`/client/`** (Engineer 4): Mobile-first passenger portal (`client/`) with `@x402-avm` Algorand wallet checkout.
+2. **`/backend/`** (Engineer 2): FastAPI v1 APIs, simulation state engine, safety interlocking guard, explainability engine, global exception handler.
+3. **`/database/`** (Data Tier): MongoDB client and collection models (`users`, `subscriptions`, `audit_logs`, `wait_logs`) with bcrypt hashing and JWT tokens.
+4. **`/frontend/`** (Engineer 3): 6-Platform Station Simulator (`frontend/simulator`) and Station Commander Portal (`frontend/station-commander`).
+5. **`/client/`** (Engineer 4): Mobile-first passenger portal (`client/`) with `@x402-avm` Algorand wallet checkout.
 
 ---
 
@@ -81,30 +82,38 @@ When a train speed drops to zero at an outer signal or station siding, the expla
 
 ---
 
-## 8. Payment Gateway: x402 Protocol + Algorand Testnet Settlement
+## 8. Payment Gateway & Authentication: x402 Protocol + Algorand + MongoDB
 - Compliant with **RFC HTTP 402 Payment Required** and `@x402-avm` client specification (`github.com/marotipatre/x402-Project`).
-- Deep delay diagnostics and explainable wait logs require a ₹9/month Aahavaan Pass.
+- Deep delay diagnostics and explainable wait logs require an active account with `is_premium: true` or a ₹9/month Aahavaan Pass.
 - Settled in `0.1 ALGO` (`100,000` microAlgos) on **Algorand Testnet** with ~3.3 second block finality.
-- Backend verifies on-chain transaction hash, updates SQLite subscription database, and unlocks telemetry.
+- Backend verifies on-chain transaction hash, upgrades passenger in MongoDB `users` to `is_premium = true`, records the pass in `subscriptions`, and unlocks telemetry.
+- Passenger authentication managed via bcrypt password hashing and signed JWT tokens (`/api/v1/auth/*`).
 
 ---
 
 ## 9. REST & WebSocket API Gateway Specifications
-- Complete documentation available in [`docs/api_docs.md`](file:///c:/Users/harsh/Downloads/Railway/docs/api_docs.md).
-- Endpoints span `/api/v1/simulator/*`, `/api/v1/station-master/*`, `/api/v1/passenger/*`, and `/api/v1/payments/*`.
-- WebSockets: `/ws/simulator` (60Hz physical updates) and `/ws/station-master` (bi-directional HITL channel).
+- Complete documentation available in [`backend/ENDPOINTS.md`](file:///c:/Dev/Hackathon/Algorand/Digital-Twin/backend/ENDPOINTS.md) and [`docs/api_docs.md`](file:///c:/Dev/Hackathon/Algorand/Digital-Twin/docs/api_docs.md).
+- **Root & Health**: `GET /` (Service discovery) and `GET /healthcheck` (Returns API gateway and MongoDB round-trip latency in milliseconds).
+- **Authentication**: `POST /api/v1/auth/register`, `POST /api/v1/auth/login`, `GET /api/v1/auth/me`, `POST /api/v1/auth/upgrade-premium`.
+- **Simulator & HITL**: `/api/v1/simulator/*`, `/api/v1/station-master/*`.
+- **Passenger & Payments**: `/api/v1/passenger/*`, `/api/v1/payments/*`.
+- **WebSockets**: `/ws/simulator` (60Hz physical updates) and `/ws/station-master` (bi-directional HITL channel).
+- **Global Error Handling**: Uncaught runtime errors safely caught by global exception handler, returning structured `500 Internal Server Error` JSON.
 
 ---
 
-## 10. Data Models, Telemetry & Relational Schemas
-- Complete schemas available in [`docs/database_schema.md`](file:///c:/Users/harsh/Downloads/Railway/docs/database_schema.md).
-- Defines raw/synthetic timetable datasets, real-time kinematic states, 6-platform physical layout, and SQL tables (`subscriptions`, `station_master_audit_log`, `passenger_wait_logs`).
+## 10. Data Models, Telemetry, MongoDB & Relational Schemas
+- Complete schemas available in [`docs/database_schema.md`](file:///c:/Dev/Hackathon/Algorand/Digital-Twin/docs/database_schema.md).
+- **Primary Data Store**: MongoDB (`aahavaan_rail` database) in `database/` managing `users`, `subscriptions`, `station_master_audit_log`, and `passenger_wait_logs`.
+- **Local Fallback Store**: Embedded SQLite (`rail_database.sqlite` via `subscription_db.py`) providing zero-setup local storage and fast audit buffer.
+- Defines raw/synthetic timetable datasets, real-time kinematic states, and 6-platform junction physical layout.
 
 ---
 
 ## 11. Multi-Service Setup & Verification Guide
-- Complete guide available in [`docs/setup_guide.md`](file:///c:/Users/harsh/Downloads/Railway/docs/setup_guide.md).
-- Runs backend on port `8000`, Simulator on port `3000`, Station Commander on port `3001`, and Passenger Client on port `3002`.
+- Complete guide available in [`docs/setup_guide.md`](file:///c:/Dev/Hackathon/Algorand/Digital-Twin/docs/setup_guide.md).
+- Runs backend on port `8000` (`python main.py` or `python backend/main.py`), Simulator on port `3000`, Station Commander on port `3001`, and Passenger Client on port `3002`.
+- Validates system health & latency via `curl http://localhost:8000/healthcheck`.
 
 ---
 

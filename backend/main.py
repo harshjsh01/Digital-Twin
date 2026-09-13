@@ -6,7 +6,9 @@ import asyncio
 import json
 import os
 import sys
+import time
 import traceback
+from datetime import datetime, timezone
 
 # Ensure backend root is in sys.path
 CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -90,6 +92,68 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 # Mount REST API v1
 app.include_router(api_v1_router)
+
+# --- Root & Healthcheck Endpoints ---
+
+@app.get("/", tags=["System"])
+async def root_endpoint():
+    """
+    Root entry point providing service metadata, health links, and API documentation references.
+    """
+    return {
+        "service": "Project Aahavaan - Rail Digital Twin API",
+        "version": "2.0.0",
+        "status": "ONLINE",
+        "message": "Welcome to Aahavaan Railway Digital Twin & HITL Station Master API.",
+        "endpoints": {
+            "docs": "/docs",
+            "redoc": "/redoc",
+            "healthcheck": "/healthcheck",
+            "api_v1": "/api/v1",
+            "simulator_ws": "/ws/simulator",
+            "station_master_ws": "/ws/station-master"
+        }
+    }
+
+
+@app.get("/healthcheck", tags=["System"])
+@app.get("/health", tags=["System"])
+async def healthcheck_endpoint():
+    """
+    Health check endpoint returning system status and latency measurements in milliseconds.
+    """
+    start_time = time.perf_counter()
+
+    db_status = "connected"
+    db_latency_ms = 0.0
+    try:
+        from database import client
+        if client:
+            db_start = time.perf_counter()
+            client.admin.command("ping")
+            db_latency_ms = round((time.perf_counter() - db_start) * 1000, 2)
+        else:
+            db_status = "uninitialized"
+    except Exception as e:
+        db_status = f"degraded: {e}"
+
+    total_latency_ms = round((time.perf_counter() - start_time) * 1000, 2)
+
+    return {
+        "status": "healthy" if "degraded" not in db_status else "degraded",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "latency_ms": total_latency_ms,
+        "database": {
+            "status": db_status,
+            "latency_ms": db_latency_ms
+        },
+        "simulation": {
+            "is_running": state_mgr.is_running,
+            "current_time_sec": state_mgr.current_time_sec,
+            "trains_count": len(state_mgr.trains)
+        }
+    }
+
 
 # --- WebSocket Channels ---
 

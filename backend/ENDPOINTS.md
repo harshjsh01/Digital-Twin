@@ -17,6 +17,9 @@ Comprehensive documentation of all REST API endpoints and real-time WebSocket ch
 
 | Domain | Method | Endpoint | Description | Auth / Gate |
 | :--- | :--- | :--- | :--- | :--- |
+| **System & Health** | `GET` | `/` | Service metadata & navigation directory | None |
+| | `GET` | `/healthcheck` | System health & latency diagnostics (DB + API) | None |
+| | `GET` | `/health` | Alias for `/healthcheck` | None |
 | **Authentication** | `POST` | `/api/v1/auth/register` | Register new user in MongoDB | None |
 | | `POST` | `/api/v1/auth/login` | Authenticate user & issue JWT | None |
 | | `GET` | `/api/v1/auth/me` | Fetch user profile & premium status | `Bearer <JWT>` |
@@ -43,6 +46,60 @@ Comprehensive documentation of all REST API endpoints and real-time WebSocket ch
 | | `PUT` | `/api/mode` | Toggle FIFO vs AI_OPTIMIZED mode | None |
 | | `POST` | `/api/simulate/tick` | Phase 1 discrete minute simulation tick | None |
 | | `POST` | `/api/simulate/start` | Phase 1 start simulation | None |
+
+---
+
+## 0. 🖥️ Root & Healthcheck Domain (`/`, `/healthcheck`)
+
+### 0.1 `GET /`
+Root discovery endpoint providing service identity, operational status, and navigational links to docs and primary endpoints.
+
+- **HTTP Method**: `GET`
+- **Request Headers**: None
+- **Request Body**: None
+- **Response (`200 OK`)**:
+```json
+{
+  "service": "Project Aahavaan - Rail Digital Twin API",
+  "version": "2.0.0",
+  "status": "ONLINE",
+  "message": "Welcome to Aahavaan Railway Digital Twin & HITL Station Master API.",
+  "endpoints": {
+    "docs": "/docs",
+    "redoc": "/redoc",
+    "healthcheck": "/healthcheck",
+    "api_v1": "/api/v1",
+    "simulator_ws": "/ws/simulator",
+    "station_master_ws": "/ws/station-master"
+  }
+}
+```
+
+---
+
+### 0.2 `GET /healthcheck` (Alias: `GET /health`)
+Performs a comprehensive real-time system health evaluation, measuring and returning latency (in milliseconds) for the API gateway and underlying MongoDB connection.
+
+- **HTTP Method**: `GET`
+- **Request Headers**: None
+- **Request Body**: None
+- **Response (`200 OK`)**:
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-09-13T05:22:10.123456+00:00",
+  "latency_ms": 2.33,
+  "database": {
+    "status": "connected",
+    "latency_ms": 0.85
+  },
+  "simulation": {
+    "is_running": true,
+    "current_time_sec": 144.5,
+    "trains_count": 14
+  }
+}
+```
 
 ---
 

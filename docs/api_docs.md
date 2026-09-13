@@ -14,6 +14,9 @@ This document provides exhaustive reference specifications for all REST API endp
 
 ## 📌 Complete Endpoint Matrix
 
+| **System & Health** | `GET` | `/` | Root service metadata, status, and navigation directory. |
+| | `GET` | `/healthcheck` | Real-time system health returning API gateway & MongoDB latency (ms). |
+| | `GET` | `/health` | Alias for `/healthcheck`. |
 | **Authentication** | `POST` | `/api/v1/auth/register` | Registers a new passenger account in MongoDB. |
 | | `POST` | `/api/v1/auth/login` | Authenticates passenger credentials and issues JWT token. |
 | | `GET` | `/api/v1/auth/me` | Retrieves authenticated user profile and live `is_premium` status. |
@@ -43,6 +46,50 @@ This document provides exhaustive reference specifications for all REST API endp
 ---
 
 ## 📖 Detailed Endpoint Specifications
+
+### 0. 🖥️ Root Discovery & Healthcheck Endpoints
+
+#### `GET /`
+Root discovery endpoint returning service branding, operational state, and navigation URLs.
+
+```json
+{
+  "service": "Project Aahavaan - Rail Digital Twin API",
+  "version": "2.0.0",
+  "status": "ONLINE",
+  "message": "Welcome to Aahavaan Railway Digital Twin & HITL Station Master API.",
+  "endpoints": {
+    "docs": "/docs",
+    "redoc": "/redoc",
+    "healthcheck": "/healthcheck",
+    "api_v1": "/api/v1",
+    "simulator_ws": "/ws/simulator",
+    "station_master_ws": "/ws/station-master"
+  }
+}
+```
+
+#### `GET /healthcheck` (Alias: `GET /health`)
+Evaluates server health and measures processing and database ping round-trip latency in milliseconds.
+
+```json
+{
+  "status": "healthy",
+  "timestamp": "2026-09-13T05:22:10.123456+00:00",
+  "latency_ms": 0.48,
+  "database": {
+    "status": "connected",
+    "latency_ms": 0.35
+  },
+  "simulation": {
+    "is_running": true,
+    "current_time_sec": 144.5,
+    "trains_count": 14
+  }
+}
+```
+
+---
 
 ### 1. 🚆 Physical Simulator Endpoints
 
