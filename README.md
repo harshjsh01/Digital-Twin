@@ -8,6 +8,7 @@ An end-to-end full-stack Digital Twin simulation and decision support platform d
 
 | Document | Description |
 | :--- | :--- |
+| [**`object.md` (Phase 2 Master Plan)**](object.md) | **Next-Level Phase 2 Blueprint**: Reorganized monorepo, 6-Platform Simulator, Station Master Portal, Client Portal with explainable wait logs, x402 + Algorand ₹9/mo payment gateway, and 4-person zero-merge-conflict workflow. |
 | [**MVP Specifications**](docs/mvp_specifications.md) | Minimum Viable Product (MVP) specifications, functional requirements, and benchmarks. |
 | [**Transcript & Brainstorming**](docs/transcript.md) | Team discussion, technical brainstorming, and technology selection transcript. |
 | [**product.md**](product.md) | Complete unified product specification combining all project dimensions. |
@@ -26,8 +27,13 @@ An end-to-end full-stack Digital Twin simulation and decision support platform d
 ## 🚂 Project Mission & Flagship Highlights
 - **Look-Ahead Conflict Scanner (60-min Horizon)**: Evaluates oncoming traffic and eliminates bottlenecks before trains physically enter occupied blocks.
 - **Google OR-Tools CP-SAT Solver**: Solves disjunctive precedence constraints to minimize priority-weighted total delay.
-- **High-Fidelity Discrete Simulation**: Minute-by-minute headless Python engine enforcing track occupancy safety limits.
-- **Next.js 15 Control Room Dashboard**: Animated SVG track map, live delay comparison charts (Recharts), and real-time explainable AI dispatch feed.
+- **Station Master Portal & HITL Approval**: Real-time suggestion matrix where the Station Master reviews, approves, or overrides platform and holding track assignments.
+- **Anti-Collision Interlocking Supervisor**: Fail-safe digital interlocking barrier guaranteeing 100% safety and zero route conflicts.
+- **3 Purpose-Built Frontends**:
+  1. *Station Simulator*: 6-Platform station with outer holding tracks, animated turnouts, and dynamic signal aspects.
+  2. *Station Commander*: Operational radar feed with AI recommendations and route interlocking controls.
+  3. *Passenger Portal*: Public search, live GPS tracking, and *"Why is My Train Stopped?"* explainable wait-reason cards.
+- **x402 + Algorand Micropayments**: Native HTTP 402 integration on Algorand Testnet for ₹9/month passenger tracking subscriptions (`github.com/marotipatre/x402-Project`).
 
 ---
 
