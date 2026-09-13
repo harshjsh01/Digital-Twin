@@ -1,106 +1,127 @@
-# System Architecture & Technical Specifications
+# System Architecture & Technical Specifications (`docs/architecture.md`)
 
-This document outlines the software architecture, component separation, communication protocols, and mathematical design patterns for **Project Aahavaan - Rail (Indian Railways Digital Twin)**.
+This document outlines the software architecture, component separation, communication protocols, mathematical design patterns, and Web3 micropayment integration for **Project Aahavaan - Rail (Indian Railways Digital Twin)**.
 
 ---
 
-## 🏛️ Architectural Overview
-
-Project Aahavaan is designed as a **Headless Discrete-Event Digital Twin** paired with an **Independent Control Room Frontend**:
+## 🏛️ High-Level System Architecture
 
 ```text
-+-------------------------------------------------------------------------------+
-|                         Next.js 15 Control Room (Frontend)                     |
-|  +---------------------+  +------------------------+  +--------------------+  |
-|  |  LiveMap.tsx (SVG)  |  | MetricsSidebar.tsx     |  | DecisionLog.tsx    |  |
-|  +---------------------+  +------------------------+  +--------------------+  |
-+---------------------------------------▲---------------------------------------+
-                                        │ REST / JSON Polling (500ms ticks)
-+---------------------------------------▼---------------------------------------+
-|                            FastAPI REST Service                                |
-|  - GET  /api/network       - PUT  /api/mode                                   |
-|  - GET  /api/state         - POST /api/simulate/tick                          |
-+---------------------------------------▲---------------------------------------+
-                                        │
-+---------------------------------------▼---------------------------------------+
-|                          Simulation Engine (Core)                              |
-|  - State Management & Minute Ticks  - Track & Platform Locks                  |
-|  - Spatial Coordinates Tracking     - Delay Accumulator                       |
-+---------------------------------------▲---------------------------------------+
-                                        │
-+---------------------------------------▼---------------------------------------+
-|                    Google OR-Tools CP-SAT Optimization Engine                  |
-|  - Conflict Horizon Scanner (60m)   - Precedence Decision Variables           |
-|  - Delay Minimization Objective     - Station Loop Line Assignment            |
-+-------------------------------------------------------------------------------+
++---------------------------------------------------------------------------------------------------------+
+|                                  PROJECT AAHAVAAN - PHASE 2 ARCHITECTURE                                |
++---------------------------------------------------------------------------------------------------------+
+|                                                                                                         |
+|   +--------------------------+   +-------------------------------+   +-------------------------------+  |
+|   | 1. STATION SIMULATOR     |   | 2. STATION COMMANDER          |   | 3. PASSENGER CLIENT PORTAL    |  |
+|   | (6-Platform Track Canvas)|   | (Operational Radar & HITL)    |   | (Search, Wait Logs, x402 Sub) |  |
+|   +--------------------------+   +-------------------------------+   +-------------------------------+  |
+|                 ▲                               ▲                                    ▲                  |
+|                 │ WebSocket /ws/simulator       │ WebSocket /ws/station-master       │ REST /x402       |
+|                 └───────────────────────────────┼────────────────────────────────────┘                  |
+|                                                 ▼                                                       |
+|                               +------------------------------------+                                    |
+|                               |       FastAPI REST & WS Engine     |                                    |
+|                               +------------------------------------+                                    |
+|                                                 ▲                                                       |
+|                        ┌────────────────────────┼────────────────────────┐                              |
+|                        ▼                        ▼                        ▼                              |
+|          +--------------------------+ +--------------------+ +------------------------+                 |
+|          | Anti-Collision Guard     | | In-Memory Digital  | | x402 & Algorand Client |                 |
+|          | & Digital Interlocking   | | Twin State Manager | | (Testnet Finality ~3s) |                 |
+|          +--------------------------+ +--------------------+ +------------------------+                 |
+|                        ▲                        ▲                                                       |
+|                        └────────────────────────┼────────────────────────┐                              |
+|                                                 ▼                        ▼                              |
+|                               +------------------------------------+ +------------------------+         |
+|                               | Google OR-Tools CP-SAT Solver      | | ML Delay Predictor     |         |
+|                               | (6-Platform + Outer Holding Tracks)| | (LightGBM / TFT Model) |         |
+|                               +------------------------------------+ +------------------------+         |
+|                                                                                                         |
++---------------------------------------------------------------------------------------------------------+
 ```
 
 ---
 
-## 🧩 Component Architecture
+## 🧩 Component Breakdown & Domain Ownership
 
-### 1. Backend Layer (Python & FastAPI)
-- **FastAPI Framework**: High-throughput async REST framework providing OpenAPI spec and CORS middleware for frontend communication.
-- **Simulation State Manager (`SimulationState`)**:
-  - Maintains deterministic memory representation of all 20 trains and 8 stations.
-  - Controls tick progression, velocity integration, and block clearance.
-- **Optimization Solver (`TrainOptimizer`)**:
-  - Encapsulates CP-SAT constraint modeling.
-  - Formulates decision variables for station departures and segment intervals.
+### 1. `/models/` — Machine Learning & Optimization Engine
+- **Delay Prediction Tier**: Predicts expected section traversal times under varying congestion levels using LightGBM and Temporal Fusion Transformers.
+- **CP-SAT Mathematical Solver**: Formulates the 6-platform allocation and outer holding sidings assignment problem across a 60-minute continuous horizon.
 
-### 2. Frontend Layer (Next.js, React, Tailwind, Recharts)
-- **App Router (`src/app/page.tsx`)**: Central state container handling the simulation loop, network metadata caching, and mode dispatch.
-- **Visualization Subsystems**:
-  - **`LiveMap.tsx`**: Dynamic SVG renderer projecting station nodes and animated train icons along track segments.
-  - **`MetricsSidebar.tsx`**: Recharts visualizer computing live delay differentials and efficiency percentages.
-  - **`DecisionLog.tsx`**: Terminal-inspired action feed rendering automated dispatch directives.
+### 2. `/backend/` — State Management, Safety & APIs
+- **Simulation State Engine**: Maintains sub-second physical simulation (for visual train animation) and minute-by-minute discrete event ticks.
+- **Safety Interlocking Supervisor**: Fail-safe software barrier acting as digital interlocking. Conflicting route locks are mathematically prohibited, ensuring a **zero-accident invariant**.
+- **Explainable Reasoning Service**: Translates complex operational constraints into plain-English wait logs.
+- **x402 Algorand Service**: Interfaces with the Algorand Testnet Indexer and GoPlausible Facilitator to verify on-chain settlements.
+
+### 3. `/frontend/` — Dual Industrial Operational Interfaces
+- **`frontend/simulator/`**: Interactive canvas rendering 6 platform lines, 4 outer waiting tracks, switch points, and multi-aspect signals.
+- **`frontend/station-commander/`**: Operational radar interface for the Station Master with one-click AI recommendation approvals and manual overrides.
+
+### 4. `/client/` — Consumer Web Application
+- Mobile-first passenger portal providing real-time train search, live speed and location telemetry, explainable wait-reason cards, and ₹9/month subscription checkout via `@x402-avm` and Algorand Testnet.
 
 ---
 
-## 🧮 Mathematical Formulation of the Optimization Engine
+## 🧮 Mathematical Formulation: 6-Platform Junction with Outer Holding Sidings
 
-The dispatch optimizer treats train routing across single-track segments as a **Job Shop Scheduling Problem with Disjunctive Constraints**.
+The station dispatch problem is formulated as a **Disjunctive Precedence Scheduling Problem with Multi-Track Alternative Routing**.
 
-### 1. Sets and Parameters
-- $T$: Set of all trains $\{t_1, t_2, \dots, t_N\}$
-- $S$: Set of all stations $\{s_1, s_2, \dots, s_M\}$
-- $B$: Set of track block segments between stations
-- $P_t$: Priority weight of train $t$ ($P_{\text{Vande Bharat}} = 10, P_{\text{Rajdhani}} = 8, P_{\text{Freight}} = 2$)
-- $d^{\text{sched}}_{t, s}$: Scheduled departure time of train $t$ from station $s$
-- $T^{\text{travel}}_{t, b}$: Free-flow travel duration of train $t$ over segment $b$:
-  $$T^{\text{travel}}_{t, b} = \frac{\text{Distance}_b}{\text{MaxSpeed}_t}$$
+### 1. Sets & Indices
+- $T$: Set of trains approaching the station $\{t_1, t_2, \dots, t_N\}$.
+- $P$: Set of 6 platform tracks $\{P_1, P_2, P_3, P_4, P_5, P_6\}$.
+- $H$: Set of 4 outer waiting / holding tracks $\{H_1, H_2, H_3, H_4\}$.
+- $R = P \cup H$: All assignable tracks at the station.
 
 ### 2. Decision Variables
-- $D_{t, s} \in [d^{\text{sched}}_{t, s}, d^{\text{sched}}_{t, s} + \text{MaxAllowedDelay}]$: Actual departure time of train $t$ from station $s$.
-- $\theta_{t_1, t_2, b} \in \{0, 1\}$: Boolean indicator variable establishing precedence order between train $t_1$ and $t_2$ on segment $b$.
+- $x_{t, r} \in \{0, 1\}$: Binary variable indicating if train $t$ is assigned to track $r \in R$.
+- $A_{t} \in [0, T_{\max}]$: Actual arrival time of train $t$ at its assigned track.
+- $D_{t} \in [A_{t} + \text{MinDwell}_t, T_{\max}]$: Actual departure time of train $t$.
+- $W_{t} \ge 0$: Outer holding duration (0 if routed directly to platform).
+- $\theta_{t_1, t_2, r} \in \{0, 1\}$: Boolean indicator establishing precedence between train $t_1$ and $t_2$ on shared track $r$.
 
 ### 3. Constraints
 
-#### A. Departure Feasibility
-A train cannot depart before its scheduled time:
-$$D_{t, s} \ge d^{\text{sched}}_{t, s} \quad \forall t \in T, s \in S$$
+#### A. Unique Track Assignment
+Every train must be assigned to either an outer holding track or directly to a platform:
+$$\sum_{r \in R} x_{t, r} = 1 \quad \forall t \in T$$
 
-#### B. Single-Occupancy Disjunctive Block Constraints
-For any two trains $t_1, t_2$ utilizing the same block segment $b$ originating at station $s_{\text{from}}$:
-$$D_{t_1, s_{\text{from}}} + T^{\text{travel}}_{t_1, b} \le D_{t_2, s_{\text{from}}} \quad \text{if } \theta_{t_1, t_2, b} = 1$$
-$$D_{t_2, s_{\text{from}}} + T^{\text{travel}}_{t_2, b} \le D_{t_1, s_{\text{from}}} \quad \text{if } \theta_{t_1, t_2, b} = 0$$
+#### B. Single-Occupancy Disjunctive Track Constraints
+If two trains $t_1, t_2$ are both assigned to the same track $r$ ($x_{t_1, r} = 1$ and $x_{t_2, r} = 1$):
+$$D_{t_1} + \text{ClearanceBuffer} \le A_{t_2} \quad \lor \quad D_{t_2} + \text{ClearanceBuffer} \le A_{t_1}$$
+Enforced via boolean reification in Google OR-Tools CP-SAT:
+$$\theta_{t_1, t_2, r} \implies D_{t_1} + \Delta_{\text{clear}} \le A_{t_2}$$
+$$\neg \theta_{t_1, t_2, r} \implies D_{t_2} + \Delta_{\text{clear}} \le A_{t_1}$$
+
+#### C. Throat Switch Locking & Headway Spacing
+Consecutive movements through the throat cross-over must maintain minimum headway:
+$$|A_{t_1} - A_{t_2}| \ge \text{HeadwayMin} \quad (\text{if movements share throat points})$$
+
+#### D. Failsafe Anti-Collision Invariant
+$$\text{Occupancy}(Track_r, Time_\tau) \le 1 \quad \forall r \in R, \forall \tau \in [0, T_{\max}]$$
 
 ### 4. Objective Function
-Minimize the system-wide priority-weighted delay at terminal stations $s_{\text{dest}}$:
-$$\min \sum_{t \in T} \left( P_t \times \left( D_{t, s_{\text{dest}}} - d^{\text{sched}}_{t, s_{\text{dest}}} \right) \right)$$
+Minimize total passenger-weighted delay and avoidable outer siding holds:
+$$\min \sum_{t \in T} \left( Priority_t \times \max(0, D_t - \text{SchedDept}_t) \right) + \sum_{t \in T, h \in H} \left( \lambda_{\text{hold}} \times W_t \cdot x_{t, h} \right)$$
+Where:
+- $Priority_t = 10$ for Vande Bharat, $8$ for Rajdhani, $2$ for Freight.
+- $\lambda_{\text{hold}}$ is the penalty weight for holding a train at an outer track.
 
 ---
 
-## 📡 Communication Protocol
+## ⛓️ Blockchain Settlement Layer: x402 + Algorand Testnet
 
 ```text
-[Next.js Client] ──(HTTP GET /api/state)──► [FastAPI Controller]
-                 ◄──(JSON Telemetry)───────
-[Next.js Client] ──(HTTP POST /api/simulate/tick)──► [FastAPI Controller]
-                 ◄──(Updated Tick State)──
-[Next.js Client] ──(HTTP PUT /api/mode?mode=AI_OPTIMIZED)──► [FastAPI Controller]
-                                                                │
-                                                    [OR-Tools CP-SAT Solver]
+[Client Application] ──(Request Deep Telemetry)──► [FastAPI Gateway]
+                     ◄──(HTTP 402 Payment Required)
+                     [Headers: Address, 100k microAlgos, Network]
+          │
+[Pera / Defly Wallet via @x402-avm]
+          │ (0.1 ALGO Micro-Transaction)
+          ▼
+[Algorand Testnet (LoRA)] ──(Confirmed Round ~3.3s)──► [FastAPI Verifier]
+                                                              │
+[Client Receives 30-Day JWT Pass] ◄───────────────────────────┘
 ```
-- **Payload Format**: Strict JSON models.
-- **Latency**: Sub-millisecond solver execution for 20 trains over 60-minute horizons.
+- **Transaction Cost**: 0.001 ALGO network fee.
+- **Latency**: Algorand Pure Proof of Stake (PPoS) delivers finality in ~3.3 seconds without soft forks.

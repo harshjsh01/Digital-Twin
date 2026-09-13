@@ -1,178 +1,275 @@
-# Data Models & Schema Reference
+# Data Models, Real-Time Telemetry & Database Schemas (`docs/database_schema.md`)
 
-This document outlines the data schemas, entity relationships, and JSON models used across the **Project Aahavaan** ecosystem.
+This document defines the complete schema specifications for **Real-Time Simulation Telemetry**, **Historical & Synthetic Datasets**, **Relational Database Tables**, and **API Payload Models** for **Project Aahavaan - Rail**.
 
 ---
 
-## 🗄️ Entity-Relationship Diagram
+## 🗄️ 1. Complete Entity-Relationship Diagram (ERD)
 
 ```mermaid
 erDiagram
-    NETWORK ||--|{ STATION : contains
-    NETWORK ||--|{ SEGMENT : connects
-    STATION ||--|{ PLATFORM : has
-    STATION ||--|{ LOOP_LINE : has
-    TRAIN ||--|{ SCHEDULE_ENTRY : follows
-    SCHEDULE_ENTRY }|--|| STATION : references
-    SEGMENT }|--|| STATION : from_station
-    SEGMENT }|--|| STATION : to_station
-    TRAIN ||--o| SEGMENT : currently_occupies
+    STATION ||--|{ PLATFORM : contains
+    STATION ||--|{ OUTER_WAITING_TRACK : contains
+    STATION ||--|{ SWITCH_POINT : controls
+    STATION ||--|{ SIGNAL_HEAD : controls
+    TRAIN ||--|{ SCHEDULE_STOP : follows
+    TRAIN ||--o| PLATFORM : occupies
+    TRAIN ||--o| OUTER_WAITING_TRACK : holds_at
+    TRAIN ||--o| TRACK_SEGMENT : traverses
+    STATION_MASTER ||--|{ DISPATCH_DECISION : executes
+    DISPATCH_DECISION }|--|| TRAIN : assigns
+    PASSENGER_USER ||--|{ ALGORAND_SUBSCRIPTION : purchases
+    TRAIN ||--|{ WAIT_LOG_ENTRY : generates
 
     STATION {
-        string id PK
+        string station_id PK
         string name
-        int platforms
-        int loops
-        object coords
+        int platform_count
+        int outer_track_count
+        string zone
     }
 
-    SEGMENT {
-        string id PK
-        string from_stn FK
-        string to_stn FK
-        float distance_km
-        float max_speed_kmph
-        int capacity
+    PLATFORM {
+        string platform_id PK
+        string station_id FK
+        string track_id
+        int length_meters
+        boolean is_occupied
+        string current_train_id FK
+    }
+
+    OUTER_WAITING_TRACK {
+        string holding_id PK
+        string station_id FK
+        string track_id
+        string direction
+        boolean is_occupied
+        string current_train_id FK
     }
 
     TRAIN {
-        string id PK
+        string train_id PK
+        string train_number
         string name
-        string type
-        int priority
+        string train_type
+        int priority_weight
         float max_speed_kmph
+        float current_speed_kmph
+        float current_pos_km
         string status
-        float pos_km
-        int delay_min
-        boolean completed
+        int current_delay_min
     }
 
-    SCHEDULE_ENTRY {
-        string station_id FK
-        int arrival_min
-        int departure_min
+    WAIT_LOG_ENTRY {
+        string log_id PK
+        string train_id FK
+        string location
+        int wait_duration_min
+        string root_cause_type
+        string conflicting_train_id FK
+        string human_readable_text
+        timestamp created_at
+    }
+
+    ALGORAND_SUBSCRIPTION {
+        string wallet_address PK
+        string tx_id
+        float amount_microalgos
+        timestamp valid_from
+        timestamp valid_until
+        boolean is_active
     }
 ```
 
 ---
 
-## 📄 JSON Schema Definitions
+## ⚡ 2. Real-Time Telemetry Data Structures
 
-### 1. Network Topology Schema (`network.json`)
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "RailwayNetwork",
-  "type": "object",
-  "properties": {
-    "stations": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "example": "STN_00" },
-          "name": { "type": "string", "example": "Station A" },
-          "coords": {
-            "type": "object",
-            "properties": {
-              "x": { "type": "number" },
-              "y": { "type": "number" }
-            },
-            "required": ["x", "y"]
-          },
-          "platforms": { "type": "integer", "default": 1 },
-          "loops": { "type": "integer", "default": 2 }
-        },
-        "required": ["id", "name", "coords", "platforms", "loops"]
-      }
-    },
-    "segments": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "example": "SEG_01" },
-          "from_stn": { "type": "string", "example": "STN_00" },
-          "to_stn": { "type": "string", "example": "STN_01" },
-          "distance_km": { "type": "number", "example": 15.0 },
-          "max_speed_kmph": { "type": "number", "example": 130 },
-          "capacity": { "type": "integer", "default": 1 }
-        },
-        "required": ["id", "from_stn", "to_stn", "distance_km", "max_speed_kmph", "capacity"]
-      }
-    }
-  },
-  "required": ["stations", "segments"]
+### 2.1 Live Train Physics & Kinematic State
+Represents the live physical telemetry broadcast every 500ms or 60Hz over WebSocket `/ws/simulator` and `/ws/station-master`:
+
+```typescript
+interface TrainRealTimeTelemetry {
+  train_id: string;               // e.g. "T_12301"
+  train_number: string;           // e.g. "12301"
+  name: string;                   // e.g. "New Delhi Rajdhani Express"
+  type: "Vande Bharat" | "Rajdhani" | "Freight";
+  priority_weight: number;        // 10 (Vande Bharat), 8 (Rajdhani), 2 (Freight)
+  
+  // Spatial & Kinematics
+  current_block_id: string;       // e.g. "SEG_02_03" or "TRK_P2" or "TRK_OH1"
+  sub_block_pos_meters: number;   // Distance traversed within current block (meters)
+  total_route_km: number;         // Continuous corridor position (km)
+  speed_kmph: number;             // Instantaneous velocity (0 to 160 km/h)
+  acceleration_mps2: number;      // Acceleration/deceleration rate (m/s²)
+  
+  // Status State Machine
+  status: "IN_TRANSIT" | "WAITING_OUTER" | "DWELLING_PLATFORM" | "TERMINATED";
+  dwell_time_remaining_sec: number; // Seconds left at platform before departure
+  
+  // Punctuality
+  scheduled_eta_min: number;
+  current_delay_min: number;      // Deviation against published timetable
+  
+  // Route Lock
+  assigned_platform_id: string | null; // e.g. "PLATFORM_2"
+  assigned_holding_id: string | null;  // e.g. "OUTER_HOLD_1"
+}
+```
+
+### 2.2 6-Platform Junction Physical Layout State
+```typescript
+interface StationPhysicalState {
+  station_id: "STN_JUNCTION_01";
+  name: "Aahavaan Central Junction";
+  
+  // 6 Dedicated Platform Tracks
+  platforms: Array<{
+    platform_id: "PLATFORM_1" | "PLATFORM_2" | "PLATFORM_3" | "PLATFORM_4" | "PLATFORM_5" | "PLATFORM_6";
+    track_id: string;
+    is_occupied: boolean;
+    occupant_train_id: string | null;
+    platform_length_meters: number;
+    platform_type: "HIGH_LEVEL_ISLAND" | "PASSENGER_TERMINAL";
+  }>;
+  
+  // 4 Outer Waiting Tracks / Holding Sidings (Prior to Home Signal)
+  outer_waiting_tracks: Array<{
+    holding_id: "OUTER_HOLD_1" | "OUTER_HOLD_2" | "OUTER_HOLD_3" | "OUTER_HOLD_4";
+    track_id: string;
+    is_occupied: boolean;
+    occupant_train_id: string | null;
+    direction: "UP_MAIN" | "DOWN_MAIN";
+    max_holding_capacity: 1;
+  }>;
+  
+  // Switch Turnout Points
+  switches: Array<{
+    switch_id: string;            // e.g. "SW_01A"
+    alignment: "NORMAL" | "REVERSE";
+    locked_for_route_id: string | null;
+    is_in_transit: boolean;
+  }>;
+  
+  // Dynamic 4-Aspect Signals
+  signals: Array<{
+    signal_id: string;            // e.g. "SIG_HOME_UP"
+    aspect: "RED" | "YELLOW" | "DOUBLE_YELLOW" | "GREEN";
+    protecting_block_id: string;
+    interlocking_locked: boolean;
+  }>;
+}
+```
+
+### 2.3 Station Master AI Recommendation Tuple
+The exact data structure output by the CP-SAT solver and delivered to the Station Commander radar:
+
+```typescript
+interface StationMasterRecommendation {
+  recommendation_id: string;      // Unique UUID, e.g. "REC_9021"
+  timestamp: number;              // Simulation minute
+  train_id: string;               // e.g. "T_12301"
+  train_name: string;
+  train_type: string;
+  priority: number;
+  eta_minutes: number;
+  
+  // Optimization Outputs
+  recommended_track: "PLATFORM_1" | "PLATFORM_2" | "PLATFORM_3" | "PLATFORM_4" | "PLATFORM_5" | "PLATFORM_6" | "OUTER_HOLD_1" | "OUTER_HOLD_2" | "OUTER_HOLD_3" | "OUTER_HOLD_4";
+  recommended_action: "ROUTE_TO_PLATFORM" | "DIVERT_TO_OUTER_HOLDING";
+  outer_wait_duration_min: number; // 0 if direct platform entry
+  
+  // Explainable Decision Rationale
+  reasoning: string;              // "Platform 2 clear. Prevents holding Rajdhani behind freight."
+  estimated_delay_saved_min: number;
+  
+  // Safety Verification Flag
+  safety_interlock_approved: boolean; // Must be true before button enabled
+  status: "PENDING_APPROVAL" | "APPROVED" | "OVERRIDDEN" | "EXPIRED";
 }
 ```
 
 ---
 
-### 2. Train Timetable Schema (`timetable.json`)
-```json
-{
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "TrainTimetable",
-  "type": "object",
-  "properties": {
-    "trains": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "id": { "type": "string", "example": "T_12301" },
-          "name": { "type": "string", "example": "Vande Bharat 1" },
-          "type": { "type": "string", "enum": ["Vande Bharat", "Rajdhani", "Freight"] },
-          "priority": { "type": "integer", "minimum": 1, "maximum": 10 },
-          "max_speed_kmph": { "type": "number", "example": 160 },
-          "schedule": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "station_id": { "type": "string" },
-                "arrival_min": { "type": "integer" },
-                "departure_min": { "type": "integer" }
-              },
-              "required": ["station_id", "arrival_min", "departure_min"]
-            }
-          }
-        },
-        "required": ["id", "name", "type", "priority", "max_speed_kmph", "schedule"]
-      }
-    }
-  },
-  "required": ["trains"]
-}
-```
+## 📊 3. Dataset Schemas (Historical, Synthetic & Training)
 
----
+### 3.1 Raw Indian Railways Timetable (`models/datasets/raw/ir_timetables_raw.csv`)
+| Column | Type | Example | Description |
+| :--- | :--- | :--- | :--- |
+| `train_no` | string | `"12301"` | Official 5-digit Indian Railways train number. |
+| `train_name` | string | `"Howrah Rajdhani"` | Official train service name. |
+| `station_code` | string | `"NDLS"` | 3-4 letter IR station code. |
+| `seq_id` | integer | `1` | Route sequence stop index. |
+| `arr_time` | string | `"16:55"` | Published arrival time (`HH:MM`). |
+| `dep_time` | string | `"17:05"` | Published departure time (`HH:MM`). |
+| `distance_km` | float | `0.0` | Cumulative route distance from origin. |
+| `train_type` | string | `"Rajdhani"` | Service class (Vande Bharat, Rajdhani, Mail/Exp, Freight). |
 
-### 3. Simulation Live State Model (Python Pydantic Representation)
+### 3.2 Normalized Feature Matrix for Delay Predictor (`models/datasets/processed/`)
+Format: Apache Parquet / Pandas DataFrame:
+
 ```python
-from pydantic import BaseModel
-from typing import List, Optional
+{
+    "train_priority": int,        # 1 to 10
+    "scheduled_dwell_min": float, # e.g. 5.0
+    "preceding_headway_min": float,# Spacing from previous train on same block
+    "section_length_km": float,   # Segment distance (e.g. 15.0 km)
+    "max_section_speed": float,   # Section MPS (110 or 130 km/h)
+    "current_delay_min": float,   # Delay accumulated so far
+    "weather_visibility_factor": float, # 1.0 (clear) to 0.4 (dense fog)
+    "is_junction_approach": bool, # True if approaching 6-platform junction
+    "target_delay_deviation": float # Label: actual delay deviation at next stop
+}
+```
 
-class ScheduleItem(BaseModel):
-    station_id: str
-    arrival_min: int
-    departure_min: int
+---
 
-class TrainTelemetry(BaseModel):
-    id: str
-    name: str
-    type: str
-    priority: int
-    status: str # "WAITING" | "MOVING" | "ARRIVED" | "COMPLETED"
-    current_stn: Optional[str]
-    next_stn: Optional[str]
-    pos_km: float
-    speed_kmph: float
-    delay_min: int
-    completed: bool
-    schedule: List[ScheduleItem]
+## 💾 4. Relational Database Schema (SQLite / PostgreSQL)
 
-class SystemTelemetryState(BaseModel):
-    current_time: int
-    trains: List[TrainTelemetry]
+Used by `backend/app/payments/subscription_db.py` and operational audit trails:
+
+### Table: `subscriptions`
+```sql
+CREATE TABLE subscriptions (
+    wallet_address VARCHAR(58) PRIMARY KEY,
+    tx_id VARCHAR(64) NOT NULL UNIQUE,
+    amount_microalgos BIGINT NOT NULL,
+    payment_network VARCHAR(20) DEFAULT 'algorand-testnet',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    expires_at TIMESTAMP NOT NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+CREATE INDEX idx_sub_expires ON subscriptions(expires_at);
+```
+
+### Table: `station_master_audit_log`
+```sql
+CREATE TABLE station_master_audit_log (
+    audit_id VARCHAR(36) PRIMARY KEY,
+    recommendation_id VARCHAR(36) NOT NULL,
+    train_id VARCHAR(20) NOT NULL,
+    recommended_track VARCHAR(20) NOT NULL,
+    actual_assigned_track VARCHAR(20) NOT NULL,
+    action_type VARCHAR(20) NOT NULL, -- 'APPROVED' | 'OVERRIDDEN' | 'EMERGENCY_STOP'
+    dispatcher_id VARCHAR(50) NOT NULL,
+    safety_check_passed BOOLEAN NOT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### Table: `passenger_wait_logs`
+```sql
+CREATE TABLE passenger_wait_logs (
+    log_id VARCHAR(36) PRIMARY KEY,
+    train_id VARCHAR(20) NOT NULL,
+    station_or_outer_block VARCHAR(50) NOT NULL,
+    started_at_min INT NOT NULL,
+    cleared_at_min INT,
+    conflicting_train_id VARCHAR(20),
+    plain_english_reason TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_wait_train ON passenger_wait_logs(train_id);
 ```

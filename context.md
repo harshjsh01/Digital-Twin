@@ -1,6 +1,6 @@
-# Project Context, Resolved Issues & Development Logs
+# Project Context, Resolved Issues & Development Logs (`context.md`)
 
-This document provides a chronological record of the architectural decisions, resolved challenges, validation results, and engineering logs throughout the development of **Project Aahavaan - Rail**.
+This document provides a chronological record of the architectural decisions, resolved challenges, validation results, and engineering logs throughout the lifecycle of **Project Aahavaan - Rail**.
 
 ---
 
@@ -37,6 +37,13 @@ Indian Railways operates one of the largest and most complex rail networks in th
   - `DecisionLog.tsx`: Streaming explainable AI dispatch feed.
 - **Polling Loop**: Built 500ms reactive polling synchronizing UI state with FastAPI simulation ticks.
 
+### Phase 2 Next-Level Evolution: Multi-App, HITL & x402 Algorand
+- **Strategic Blueprint**: Ingested `Aahavaan-Rail_x402_Algorand.pptx` and authored `object.md` and `docs/file.md`.
+- **Monorepo Reorganization**: Partitioned repository into 4 isolated developer domains (`/models/`, `/backend/`, `/frontend/`, `/client/`) to enable concurrent 4-person development with zero git merge conflicts.
+- **Station Master Portal & Digital Interlocking**: Introduced 6-platform junction simulation with 4 outer waiting tracks and a Human-in-the-Loop (HITL) approval deck.
+- **Explainable Passenger Wait Logs**: Added semantic natural-language explainability for passenger halts.
+- **Web3 Micropayment Gateway**: Integrated RFC HTTP 402 standard with `@x402-avm` client and Algorand Testnet for ₹9/month subscription access.
+
 ---
 
 ## 🔍 Resolved Technical Challenges & Bug Fixes
@@ -47,11 +54,13 @@ Indian Railways operates one of the largest and most complex rail networks in th
 | **Port 8000 socket bind conflict (`WinError 10048`)** | Existing FastAPI background process was still holding port 8000 upon restart. | Identified process PID using `netstat -ano \| findstr :8000` and terminated the stale process before re-binding. |
 | **Path resolution on backend execution** | Relative path `backend/data/...` failed when running directly from the `backend/` directory. | Standardized file paths to `data/...` relative to the backend execution context. |
 | **Frontend directory lock on re-init** | Existing folder in use during Next.js setup. | Initialized application in clean `control-room` directory with full dependencies and updated tooling. |
+| **`state.trains.filter is not a function`** | Backend `POST /api/simulate/tick` returned a dictionary instead of an array. | Updated backend tick route to return `list(state.values())` and added array normalization in frontend. |
 
 ---
 
 ## 📈 Verification & Benchmark Results
 
 - **Backend Latency**: Sub-15ms response times for `/api/state` and `/api/simulate/tick`.
-- **Solver Efficiency**: Google OR-Tools CP-SAT solves network-wide conflict resolution in under **25ms**.
+- **Solver Efficiency**: Google OR-Tools CP-SAT solves network-wide conflict resolution in under **25ms** (and $< 50\text{ms}$ for the 6-platform model).
 - **Visual Performance**: 60 FPS smooth animation in Next.js Control Room with zero UI freezing during live simulation runs.
+- **Blockchain Finality**: Algorand Testnet rounds confirmed in ~3.3 seconds with transaction hashes verified via the Algorand Indexer.

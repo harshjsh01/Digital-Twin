@@ -9,6 +9,7 @@ An end-to-end full-stack Digital Twin simulation and decision support platform d
 | Document | Description |
 | :--- | :--- |
 | [**`object.md` (Phase 2 Master Plan)**](object.md) | **Next-Level Phase 2 Blueprint**: Reorganized monorepo, 6-Platform Simulator, Station Master Portal, Client Portal with explainable wait logs, x402 + Algorand ₹9/mo payment gateway, and 4-person zero-merge-conflict workflow. |
+| [**`docs/file.md` (Complete File Directory)**](docs/file.md) | **Exhaustive Technical Directory**: Detailed breakdown of every single file, folder, endpoint, inputs/outputs, real-time data structures, and role in the system. |
 | [**MVP Specifications**](docs/mvp_specifications.md) | Minimum Viable Product (MVP) specifications, functional requirements, and benchmarks. |
 | [**Transcript & Brainstorming**](docs/transcript.md) | Team discussion, technical brainstorming, and technology selection transcript. |
 | [**product.md**](product.md) | Complete unified product specification combining all project dimensions. |

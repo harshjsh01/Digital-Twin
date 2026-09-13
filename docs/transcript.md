@@ -1,8 +1,9 @@
-# Team Discussion & Architectural Brainstorming Transcript
+# Team Discussion & Architectural Brainstorming Transcript (`docs/transcript.md`)
 
 **Project:** Project Aahavaan - Rail (Indian Railways Digital Twin Simulation)  
-**Session:** System Architecture, Solver Selection, and Control Room UX  
-**Participants:** Lead AI Architect, Dispatch Engineering Lead, Optimization Specialist, Frontend Engineer  
+**Session 1:** Core Optimization Architecture & Control Room UI (Phase 1)  
+**Session 2:** Next-Level Phase 2 Evolution, 6-Platform Junction, HITL Station Master, Passenger Portal & x402 Algorand  
+**Participants:** Lead AI Architect, Dispatch Engineering Lead, Optimization Specialist, Frontend Engineer, Blockchain & Payments Lead  
 
 ---
 
@@ -48,3 +49,29 @@
 
 **Lead AI Architect:**  
 "Approved. We'll use Next.js 15, Tailwind CSS, and Recharts, polling the FastAPI backend every 500ms (representing 1 simulation minute). Let's proceed with implementation."
+
+---
+
+### [Transcript Excerpt 04: Phase 2 Next-Level Evolution & 6-Platform Junction]
+
+**Lead AI Architect:**  
+"Team, we are taking Aahavaan to Phase 2 per `Aahavaan-Rail_x402_Algorand.pptx`. We need to expand from a synthetic linear model to a true junction station with 6 dedicated platform tracks and 4 outer waiting tracks. In real railway operations, trains wait at outer sidings prior to the home signal if platforms are saturated."
+
+**Dispatch Engineering Lead:**  
+"We also must implement a Station Master Operational Cockpit with Human-in-the-Loop (HITL) authority. The AI must never automatically force points or signals without the Station Master's approval. The solver should generate ranked recommendations, and the Station Master clicks [Approve] or [Override]."
+
+**Optimization Specialist:**  
+"And our Anti-Collision Interlocking Supervisor must act as a hard safety barrier. Even if the Station Master accidentally tries to route two trains to Platform 2 simultaneously, the interlocking guard will reject it with a `SAFETY_INTERLOCK_VIOLATION` and maintain Red signals."
+
+---
+
+### [Transcript Excerpt 05: Passenger Portal & x402 Algorand Micropayments]
+
+**Blockchain & Payments Lead:**  
+"For the passenger client portal, we are implementing the RFC HTTP 402 Payment Required protocol on Algorand Testnet, using the `@x402-avm` client from `github.com/marotipatre/x402-Project`. When commuters want to know *'Why is my train stopped?'*, they get instant, plain-English explainable diagnostics."
+
+**Frontend Engineer:**  
+"And they can purchase a ₹9/month subscription pass right from their Algorand wallet (0.1 ALGO). The backend verifies the transaction hash on Algorand Testnet with ~3.3s finality and unlocks deep telemetry."
+
+**Lead AI Architect:**  
+"To execute this rapidly with 4 developers, we will strictly isolate the codebase into `/models`, `/backend`, `/frontend`, and `/client`. Each engineer has exclusive ownership of their directory, contracts are frozen upfront, and we update documentation on every single commit. Zero merge conflicts guaranteed."

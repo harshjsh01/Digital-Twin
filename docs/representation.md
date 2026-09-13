@@ -1,123 +1,133 @@
-# Visual Representations & State Machines
+# Visual Representations, Topologies & State Machines (`docs/representation.md`)
 
-This document provides detailed visual diagrams, state machines, and architectural representations of the **Project Aahavaan** simulation and dispatching engine.
+This document provides visual diagrams, track topologies, state machines, and switch interlocking schematics for **Project Aahavaan - Rail**.
 
 ---
 
-## 🚦 1. Train Movement Finite State Machine (FSM)
+## 🛤️ 1. 6-Platform Junction with Outer Waiting Tracks Topology
+
+```text
+========================================================================================================================
+                                     AAHAVAAN CENTRAL JUNCTION PHYSICAL TOPOLOGY
+========================================================================================================================
+
+   UP APPROACH                                 STATION THROAT                                   STATION EXIT
+ (From Up Trunk)                                 (Switches)                                    (To Down Trunk)
+
+                     +---------------------------------------+
+                     | Outer Waiting Track 1 (Up Main Loop)  |
+                     +---------------------------------------+
+                    /                                         \
+--- Up Main Track -+--[SW_01A]---------------------------------[SW_01B]--+
+                    \                                                   /
+                     +-------------------------------------------------+
+                     | Outer Waiting Track 2 (Up Freight Siding)       |
+                     +-------------------------------------------------+
+                                       \
+                                        \ (Crossover Ladder to Platforms)
+                                         +==================== [ PLATFORM 1: 650m ] ====================+
+                                         |                                                               |
+                                         +==================== [ PLATFORM 2: 650m ] ====================+
+                                         |                                                               |
+                                         +==================== [ PLATFORM 3: 650m ] ====================+
+                                         |                                                               |
+                                         +==================== [ PLATFORM 4: 600m ] ====================+
+                                         |                                                               |
+                                         +==================== [ PLATFORM 5: 600m ] ====================+
+                                         |                                                               |
+                                         +==================== [ PLATFORM 6: 550m ] ====================+
+                                         /
+                     +-------------------------------------------------+
+                     | Outer Waiting Track 3 (Down Freight Siding)     |
+                     +-------------------------------------------------+
+                    /                                                   \
+--- Down Main ----+--[SW_02A]---------------------------------[SW_02B]--+
+                    \                                         /
+                     +---------------------------------------+
+                     | Outer Waiting Track 4 (Down Main Loop)|
+                     +---------------------------------------+
+
+========================================================================================================================
+ OPERATIONAL ZONES:
+ 1. Outer Waiting Siding 1 & 2: Buffers lower-priority trains before the Home Signal when station platforms are saturated.
+ 2. Station Platforms 1 - 6: Direct passenger embarkation/disembarkation with individual track circuits and starter signals.
+ 3. Station Throat Crossover: Interlocked ladder turnouts permitting any approach track to access any platform safely.
+========================================================================================================================
+```
+
+---
+
+## 🚦 2. Signal Aspect & Track Circuit State Machine
 
 ```mermaid
 stateDiagram-v2
-    [*] --> WAITING : Spawned with Initial Schedule
-    
-    state WAITING {
-        [*] --> CheckScheduledDeparture
-        CheckScheduledDeparture --> EvaluateTrack : Departure Time Reached
-        EvaluateTrack --> HoldAtLoop : Block Occupied or AI Precedence Hold
-        HoldAtLoop --> EvaluateTrack : Next Tick
-        EvaluateTrack --> GrantDeparture : Next Block Clear & Green Aspect
-    }
-    
-    WAITING --> MOVING : Enters Mainline / Block Section
-    
-    state MOVING {
-        [*] --> InTransit
-        InTransit --> AdvanceCoordinates : Delta Pos = Speed * TimeStep
-        AdvanceCoordinates --> CheckBoundary : Pos >= Segment Distance
-        CheckBoundary --> InTransit : Pos < Segment Distance
-    }
-    
-    MOVING --> ARRIVED : Segment Traversed
-    
-    state ARRIVED {
-        [*] --> ClearBlockSection
-        ClearBlockSection --> DwellAtPlatform : Release Preceding Block
-        DwellAtPlatform --> EvaluateNextLeg : Check Terminal Station
-    }
-    
-    ARRIVED --> WAITING : Intermediate Station (Next Leg)
-    ARRIVED --> COMPLETED : Final Destination Station
-    COMPLETED --> [*]
+    [*] --> RED : Block Occupied by Train
+    RED --> YELLOW : Train Clears Block 1 (Moves into Block 2)
+    YELLOW --> DOUBLE_YELLOW : Train Clears Block 2 (Moves into Block 3)
+    DOUBLE_YELLOW --> GREEN : Train Clears Block 3 (Moves into Block 4)
+    GREEN --> RED : Next Train Trips Track Circuit Sensor
 ```
+
+| Signal Aspect | Visual Display | Indication to Driver / Simulator | Speed Permitted |
+| :--- | :--- | :--- | :--- |
+| **RED** | Single Red Lamp | **Danger / Stop**. Do not pass signal. | $0\text{ km/h}$ |
+| **YELLOW** | Single Amber Lamp | **Caution**. Expect next signal to be at Danger. | $30\text{ km/h}$ |
+| **DOUBLE YELLOW** | Two Amber Lamps | **Attention**. Expect next signal at Caution. | $60\text{ km/h}$ |
+| **GREEN** | Single Green Lamp | **Clear**. Line is clear for at least three blocks. | Max Permissible Speed ($110-160\text{ km/h}$) |
 
 ---
 
-## 🛤️ 2. Station Topology & Loop Line Overtaking Model
-
-```text
-========================================================================================
-                              TYPICAL STATION TOPOLOGY (8 Stations)
-========================================================================================
-
-                         +-----------------------------+
-                         |      Loop Line 1 (Siding)    |  <--- Freight Hold Track
-                         +-----------------------------+
-                        /                               \
---- Main Line Segment --+=========== Main Platform =====+--- Next Main Line Segment --->
-                        \                               /
-                         +-----------------------------+
-                         |      Loop Line 2 (Siding)    |  <--- Dynamic Buffer Track
-                         +-----------------------------+
-
-========================================================================================
-                             OVERTAKE SEQUENCE SCENARIO
-========================================================================================
-
-Step 1: Freight Train T_12315 arrives at Station C.
-        AI detects Vande Bharat T_12301 approaching 15 km behind.
-        Action -> Route T_12315 into Loop Line 1.
-
-Step 2: Main Line clear. Vande Bharat T_12301 passes through Station C Main Line at 160 km/h.
-
-Step 3: Vande Bharat enters Segment C-D. Signal turns green.
-        Action -> Dispatch Freight T_12315 back to Main Line with minimal cumulative penalty.
-========================================================================================
-```
-
----
-
-## 🔄 3. Simulation Step Sequence Flowchart
+## 🔀 3. Switch Turnout & Route Interlocking FSM
 
 ```mermaid
-flowchart TD
-    Start([Tick Start: Minute t]) --> IncrementTime[Increment Current Sim Minute]
-    IncrementTime --> ModeCheck{Mode == AI_OPTIMIZED?}
+stateDiagram-v2
+    [*] --> IDLE : Switch Point Free
+
+    state IDLE {
+        [*] --> Normal : Points Aligned for Straight Run
+        [*] --> Reverse : Points Aligned for Diverging Route
+    }
+
+    IDLE --> ROUTE_REQUESTED : Station Master / AI Approves Route
     
-    ModeCheck -->|Yes & Schedule Stale| RunSolver[Execute Google OR-Tools CP-SAT Solver]
-    RunSolver --> StoreSchedule[Cache Optimized Dispatch Plan]
-    ModeCheck -->|No or Cache Valid| ProcessTrains[Iterate Active Trains]
-    StoreSchedule --> ProcessTrains
+    state ROUTE_REQUESTED {
+        [*] --> CheckFoulingPoints
+        CheckFoulingPoints --> CheckConflictingLocks : No Obstruction
+        CheckConflictingLocks --> InterlockConflict : Route Conflict Detected
+        CheckConflictingLocks --> ThrowSwitches : Interlocking Verified Safe
+    }
+
+    InterlockConflict --> IDLE : Command Rejected / Red Signal Held
+    ThrowSwitches --> LOCKED : Switch Detectors Confirm Locked In Position
     
-    subgraph Train Iteration Loop
-        ProcessTrains --> CheckStatus{Train Status?}
-        
-        CheckStatus -->|WAITING| CheckDept{Current Time >= Target Dept?}
-        CheckDept -->|No| IncDelay[Accumulate Delay +1]
-        CheckDept -->|Yes| CheckBlock{Next Block Clear?}
-        CheckBlock -->|No| IncDelay
-        CheckBlock -->|Yes| LockBlock[Lock Block & Set Status = MOVING]
-        
-        CheckStatus -->|MOVING| StepPos[Increment Position: pos += speed * dt]
-        StepPos --> CheckDone{Pos >= Distance?}
-        CheckDone -->|No| KeepMoving[Continue Transit]
-        CheckDone -->|Yes| ArriveAtStn[Set Status = WAITING / ARRIVED & Unlock Block]
-    end
-    
-    ProcessTrains --> ComputeMetrics[Aggregate Cumulative Delays & Metric Differentials]
-    ComputeMetrics --> ReturnPayload([Return JSON Telemetry to Frontend])
+    state LOCKED {
+        [*] --> SignalGreenAspect
+        SignalGreenAspect --> TrainTraversing : Train Enters Section
+        TrainTraversing --> ReleaseLock : Train Axle Clears Track Circuit
+    }
+
+    ReleaseLock --> IDLE : Route Released
 ```
 
 ---
 
-## 📊 4. Network Topological Map Representation
+## 💬 4. Passenger "Why is My Train Stopped?" Explainability FSM
 
-```text
-[STN_00] ===(SEG_01: 15km)===> [STN_01] ===(SEG_12: 15km)===> [STN_02] ===(SEG_23: 15km)===> [STN_03]
- Station A                       Station B                       Station C                       Station D
- (1 Main, 2 Loops)               (1 Main, 2 Loops)               (1 Main, 2 Loops)               (1 Main, 2 Loops)
-        |                               |                               |                               |
-        v                               v                               v                               v
-[STN_04] ===(SEG_45: 15km)===> [STN_05] ===(SEG_56: 15km)===> [STN_06] ===(SEG_67: 15km)===> [STN_07]
- Station E                       Station F                       Station G                       Station H
- (1 Main, 2 Loops)               (1 Main, 2 Loops)               (1 Main, 2 Loops)               (1 Main, 2 Loops)
+```mermaid
+stateDiagram-v2
+    [*] --> RUNNING : Train Speed > 0 km/h
+    
+    RUNNING --> HALTED : Speed drops to 0 km/h (Sensor Trigger)
+    
+    state HALTED {
+        [*] --> DetectHaltLocation
+        DetectHaltLocation --> CheckSignalHold : Stopped at Outer Signal / Holding Track
+        DetectHaltLocation --> CheckPlatformDwell : Stopped at Platform Track
+        
+        CheckSignalHold --> QueryInterlocking : Find Conflicting Active Route Lock
+        QueryInterlocking --> GenerateSemanticLog : Identify Higher-Priority Precedence Train
+        GenerateSemanticLog --> PublishWaitReason : Format Plain-English Explanation
+    }
+    
+    PublishWaitReason --> RUNNING : Signal Turns Green, Speed > 0 km/h
 ```
