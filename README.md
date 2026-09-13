@@ -8,20 +8,20 @@ An end-to-end full-stack Digital Twin simulation and decision support platform d
 
 | Document | Description |
 | :--- | :--- |
-| [**`object.md` (Phase 2 Master Plan)**](object.md) | **Next-Level Phase 2 Blueprint**: Reorganized monorepo, 6-Platform Simulator, Station Master Portal, Client Portal with explainable wait logs, x402 + Algorand ₹9/mo payment gateway, and 4-person zero-merge-conflict workflow. |
-| [**`docs/file.md` (Complete File Directory)**](docs/file.md) | **Exhaustive Technical Directory**: Detailed breakdown of every single file, folder, endpoint, inputs/outputs, real-time data structures, and role in the system. |
-| [**MVP Specifications**](docs/mvp_specifications.md) | Minimum Viable Product (MVP) specifications, functional requirements, and benchmarks. |
-| [**Transcript & Brainstorming**](docs/transcript.md) | Team discussion, technical brainstorming, and technology selection transcript. |
-| [**product.md**](product.md) | Complete unified product specification combining all project dimensions. |
-| [**context.md**](context.md) | Complete project context, resolved issues, bug fixes, and development logs. |
-| [**./docs/workflow_chart.md**](docs/workflow_chart.md) | End-to-end user journey and system workflow Mermaid flowcharts. |
-| [**./docs/FEATURES.md**](docs/FEATURES.md) | Complete feature breakdown with flagship highlights. |
-| [**./docs/setup_guide.md**](docs/setup_guide.md) | Installation, configuration, and startup instructions. |
-| [**./docs/architecture.md**](docs/architecture.md) | System architecture, FastAPI backend routing, Next.js frontend, and OR-Tools solver. |
-| [**./docs/representation.md**](docs/representation.md) | System flow charts, finite state machines (FSM), and visual track representations. |
-| [**./docs/api_docs.md**](docs/api_docs.md) | REST API endpoint reference with request and response schemas. |
-| [**./docs/database_schema.md**](docs/database_schema.md) | Network topology, train timetable, and telemetry data models. |
-| [**./docs/REFERENCES.md**](docs/REFERENCES.md) | Comprehensive academic, industrial, and technical literature references. |
+| [**`object.md` (Phase 2 Master Plan)**](https://github.com/harshjsh01/Digital-Twin/blob/main/object.md) | **Next-Level Phase 2 Blueprint**: Reorganized monorepo, 6-Platform Simulator, Station Master Portal, Client Portal with explainable wait logs, x402 + Algorand ₹9/mo payment gateway, and 4-person zero-merge-conflict workflow. |
+| [**`docs/file.md` (Complete File Directory)**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/file.md) | **Exhaustive Technical Directory**: Detailed breakdown of every single file, folder, endpoint, inputs/outputs, real-time data structures, and role in the system. |
+| [**MVP Specifications**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/mvp_specifications.md) | Minimum Viable Product (MVP) specifications, functional requirements, and benchmarks. |
+| [**Transcript & Brainstorming**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/transcript.md) | Team discussion, technical brainstorming, and technology selection transcript. |
+| [**product.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/product.md) | Complete unified product specification combining all project dimensions. |
+| [**context.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/context.md) | Complete project context, resolved issues, bug fixes, and development logs. |
+| [**./docs/workflow_chart.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/workflow_chart.md) | End-to-end user journey and system workflow Mermaid flowcharts. |
+| [**./docs/FEATURES.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/FEATURES.md) | Complete feature breakdown with flagship highlights. |
+| [**./docs/setup_guide.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/setup_guide.md) | Installation, configuration, and startup instructions. |
+| [**./docs/architecture.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/architecture.md) | System architecture, FastAPI backend routing, Next.js frontend, and OR-Tools solver. |
+| [**./docs/representation.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/representation.md) | System flow charts, finite state machines (FSM), and visual track representations. |
+| [**./docs/api_docs.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/api_docs.md) | REST API endpoint reference with request and response schemas. |
+| [**./docs/database_schema.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/database_schema.md) | Network topology, train timetable, and telemetry data models. |
+| [**./docs/REFERENCES.md**](https://github.com/harshjsh01/Digital-Twin/blob/main/docs/REFERENCES.md) | Comprehensive academic, industrial, and technical literature references. |
 
 ---
 
